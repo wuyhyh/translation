@@ -1,0 +1,3 @@
+<!-- page: 563 -->
+
+## The previous code fragment shows how to define a memory region over the SRAM memory and to prevent access to it in write mode, both from privileged and unprivileged code. The region starts from the address 0x2000 0A00 and lasts 32 bytes. A pointer to the beginning of that region is defined (line 21) and the content of the first word is modified (line 22). The MPU is enabled, and the region attributes prevent code from modify its content. The if at line 27 will not match, because the first region word effectively contains the value 0xDDEEFF00. However, the instruction at line 30 will generate a MemManage fault, due to read only attribute of the region.

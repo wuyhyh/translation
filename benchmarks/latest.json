@@ -1,0 +1,239 @@
+{
+  "created_at": "2026-09-09T06:50:40+00:00",
+  "pdf": "/home/wuyuhang/translation/MasteringSTM32-2e.pdf",
+  "pages": [
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117
+  ],
+  "requested_model": "qwen3.8:latest",
+  "backend_probes": [
+    {
+      "backend": "openai",
+      "ok": true,
+      "actual_model": "qwen3.8:latest",
+      "reasoning_present": true,
+      "reasoning_characters": 284,
+      "input_tokens": 15,
+      "output_tokens": 39,
+      "elapsed_seconds": 24.416
+    },
+    {
+      "backend": "ollama",
+      "ok": true,
+      "actual_model": "qwen3.8:latest",
+      "reasoning_present": false,
+      "reasoning_characters": 0,
+      "input_tokens": 17,
+      "output_tokens": 2,
+      "elapsed_seconds": 14.16
+    }
+  ],
+  "selected_backend": "ollama",
+  "results": [
+    {
+      "workers": 1,
+      "chunk_size": 8000,
+      "pages": [
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117
+      ],
+      "page_count": 12,
+      "chunk_count": 4,
+      "total_seconds": 85.238,
+      "average_seconds_per_page": 7.103,
+      "average_seconds_per_chunk": 21.306,
+      "throughput_pages_per_minute": 8.447,
+      "input_tokens": 6917,
+      "output_tokens": 4902,
+      "failed_chunks": 0,
+      "retry_count": 0,
+      "request_count": 4,
+      "auto_splits": 0,
+      "reasoning_present": false,
+      "complete": true,
+      "markdown_complete": true,
+      "headings": {
+        "source": 8,
+        "output": 8
+      },
+      "code_fences": {
+        "source": 34,
+        "output": 34
+      },
+      "image_references": {
+        "source": 18,
+        "output": 18
+      },
+      "actual_model": "qwen3.8:latest",
+      "backend": "ollama"
+    },
+    {
+      "workers": 1,
+      "chunk_size": 12000,
+      "pages": [
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117
+      ],
+      "page_count": 12,
+      "chunk_count": 3,
+      "total_seconds": 88.145,
+      "average_seconds_per_page": 7.345,
+      "average_seconds_per_chunk": 29.376,
+      "throughput_pages_per_minute": 8.168,
+      "input_tokens": 6505,
+      "output_tokens": 4890,
+      "failed_chunks": 0,
+      "retry_count": 0,
+      "request_count": 3,
+      "auto_splits": 0,
+      "reasoning_present": false,
+      "complete": true,
+      "markdown_complete": true,
+      "headings": {
+        "source": 8,
+        "output": 8
+      },
+      "code_fences": {
+        "source": 34,
+        "output": 34
+      },
+      "image_references": {
+        "source": 18,
+        "output": 18
+      },
+      "actual_model": "qwen3.8:latest",
+      "backend": "ollama"
+    },
+    {
+      "workers": 2,
+      "chunk_size": 8000,
+      "pages": [
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117
+      ],
+      "page_count": 12,
+      "chunk_count": 4,
+      "total_seconds": 86.085,
+      "average_seconds_per_page": 7.174,
+      "average_seconds_per_chunk": 42.456,
+      "throughput_pages_per_minute": 8.364,
+      "input_tokens": 6917,
+      "output_tokens": 4907,
+      "failed_chunks": 0,
+      "retry_count": 0,
+      "request_count": 4,
+      "auto_splits": 0,
+      "reasoning_present": false,
+      "complete": true,
+      "markdown_complete": true,
+      "headings": {
+        "source": 8,
+        "output": 8
+      },
+      "code_fences": {
+        "source": 34,
+        "output": 34
+      },
+      "image_references": {
+        "source": 18,
+        "output": 18
+      },
+      "actual_model": "qwen3.8:latest",
+      "backend": "ollama"
+    },
+    {
+      "workers": 4,
+      "chunk_size": 8000,
+      "pages": [
+        106,
+        107,
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        117
+      ],
+      "page_count": 12,
+      "chunk_count": 4,
+      "total_seconds": 84.671,
+      "average_seconds_per_page": 7.056,
+      "average_seconds_per_chunk": 43.913,
+      "throughput_pages_per_minute": 8.504,
+      "input_tokens": 6917,
+      "output_tokens": 4918,
+      "failed_chunks": 0,
+      "retry_count": 0,
+      "request_count": 4,
+      "auto_splits": 0,
+      "reasoning_present": false,
+      "complete": true,
+      "markdown_complete": true,
+      "headings": {
+        "source": 8,
+        "output": 8
+      },
+      "code_fences": {
+        "source": 34,
+        "output": 34
+      },
+      "image_references": {
+        "source": 18,
+        "output": 18
+      },
+      "actual_model": "qwen3.8:latest",
+      "backend": "ollama"
+    }
+  ],
+  "recommendation": {
+    "workers": 1,
+    "chunk_size": 8000,
+    "backend": "ollama",
+    "throughput_pages_per_minute": 8.447,
+    "estimated_910_seconds": 6463.8
+  }
+}

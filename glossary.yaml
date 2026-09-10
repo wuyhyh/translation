@@ -1,0 +1,33 @@
+version: 1
+first_occurrence_style: "中文（English）"
+terms:
+  microcontroller: 微控制器
+  core: 内核
+  toolchain: 工具链
+  register: 寄存器
+  stack pointer: 堆栈指针
+  interrupt: 中断
+  exception: 异常
+  memory map: 内存映射
+  pipeline: 流水线
+  clock tree: 时钟树
+  general-purpose input/output: 通用输入/输出
+  direct memory access: 直接存储器访问
+  hardware abstraction layer: 硬件抽象层
+  operating system: 操作系统
+  real-time operating system: 实时操作系统
+  context switching: 上下文切换
+  system on chip: 片上系统
+protected_terms:
+  - STM32
+  - ST Microelectronics
+  - STM32CubeIDE
+  - CubeHAL
+  - Cortex-M
+  - ARM
+  - CMSIS
+  - NVIC
+  - GPIO
+  - UART
+  - USART
+  - DMA

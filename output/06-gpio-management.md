@@ -12,7 +12,7 @@ GPIO 是 MCU 与外部世界通信的方式。每个电子板卡都使用可变�
 
 本章通过查看 CubeHAL 中最简单的模块之一：HAL_- GPIO，开始了我们在 CubeHAL 内部的旅程。我们已经在本书早期的示例中使用过该模块的几个函数，但现在正是理解如此简单且常用的外设所提供的所有可能性的合适时机。然而，在我们开始描述 HAL 功能之前，最好先快速了解一下 STM32 外设如何映射到逻辑地址，以及它们在 HAL 库中是如何表示的。
 
-## 6.1 STM32 外设映射和 HAL 句柄
+## 6.1 STM32 外设映射与 HAL 外设寄存器结构体
 
 每个 STM32 外设都通过多个级别的总线与 MCU 内核互连，如图 6.1¹ 所示。
 
@@ -25,9 +25,9 @@ GPIO 是 MCU 与外部世界通信的方式。每个电子板卡都使用可变�
 图 6.1：STM32F072 微控制器的总线架构
 
 - 系统总线将 Cortex-M 内核的系统总线连接到总线矩阵（Bus Matrix），该矩阵管理内核和直接存储器访问（DMA）之间的仲裁。内核和 DMA 都作为主设备（master）运行。
-- DMA 总线将 DMA 的高级高性能总线（AHB）主接口连接到总线矩阵，该矩阵管理 CPU 和 DMA 对 SRAM、闪存内存和外设的访问。
-- 总线矩阵管理内核系统总线和 DMA 主总线之间的访问仲裁。仲裁使用轮询（Round Robin）算法。总线矩阵由两个主设备（CPU、DMA）和四个从设备（FLASH 内存接口、SRAM、带有 AHB 到高级外设总线（APB）桥接的 AHB1 以及 AHB2）组成。AHB 外设通过总线矩阵连接到系统总线，以允许 DMA 访问。
-- AHB 到 APB 桥接器在 AHB 和 APB 总线之间提供完全同步的连接，大多数外设都连接在 APB 总线上。
+- DMA 总线将 DMA 的 AHB（Advanced High-performance Bus，高性能总线）主接口连接到总线矩阵，该矩阵管理 CPU 和 DMA 对 SRAM、闪存内存和外设的访问。
+- 总线矩阵管理内核系统总线和 DMA 主总线之间的访问仲裁。仲裁使用轮转（Round-Robin）算法。总线矩阵由两个主设备（CPU、DMA）和四个从设备（FLASH 内存接口、SRAM、带 AHB-APB 桥的 AHB1 以及 AHB2）组成。AHB 外设通过总线矩阵连接到系统总线，以允许 DMA 访问。
+- AHB-APB 桥在 AHB 和高级外设总线（APB，Advanced Peripheral Bus）之间提供完全同步的连接，大多数外设都连接在 APB 总线上。
 
 正如我们将在后续章节中看到的，这些总线中的每一条都连接到不同的时钟源，这些时钟源决定了连接到该总线的外设的最大速度²。
 
@@ -41,7 +41,7 @@ GPIO 是 MCU 与外部世界通信的方式。每个电子板卡都使用可变�
 
 图 6.2：STM32F072 微控制器的外设区域内存映射
 
-这种空间的组织方式，因此外设的映射方式，是特定 STM32 微控制器特有的。例如，在 STM32F072 微控制器中，AHB2 总线映射到从 0x4800 0000 到 0x4800 17FF 的区域。这意味着该区域宽度为 6144 字节。该区域进一步划分为多个子区域，每个子区域对应一个特定的外设。沿用前面的例子，GPIOA 外设（管理连接到 PORT-A 的所有引脚）映射从 0x4800 0000 到 0x4800 03FF，这意味着它占用 1KB 的别名外设内存。这个内存映射空间反过来根据特定外设进行组织。表 6.1³ 显示了 GPIO 外设的内存布局。
+这种空间的组织方式，因此外设的映射方式，是特定 STM32 微控制器特有的。例如，在 STM32F072 微控制器中，AHB2 总线映射到从 0x4800 0000 到 0x4800 17FF 的区域。这意味着该区域宽度为 6144 字节。该区域进一步划分为多个子区域，每个子区域对应一个特定的外设。沿用前面的例子，GPIOA 外设（管理连接到 PORT-A 的所有引脚）映射从 0x4800 0000 到 0x4800 03FF，这意味着它占用 1 KB 的外设地址映射空间。这个内存映射空间反过来根据特定外设进行组织。表 6.1³ 显示了 GPIO 外设的内存布局。
 
 ![Image from PDF page 162](../images/page-0162-image-02.png)
 
@@ -80,7 +80,7 @@ while(1);
 
 再次澄清这一点很重要：每个 STM32 系列（F0、F1 等）以及给定系列中的每个成员（STM32F072、STM32F103 等）都提供其外设子集，这些外设映射到特定地址。此外，外设的实现方式在 STM32 系列之间也有所不同。
 
-HAL 的角色之一是从特定的外设映射中抽象出来。这是通过为每个外设定义多个句柄（handler）来实现的。句柄不过是一个 C 结构体，其引用用于指向真实的外设地址。让我们看看其中一个。
+HAL 的角色之一是从特定的外设映射中抽象出来。这是通过为每个外设定义多个外设寄存器结构体来实现的（HAL 源码把这类结构体称作 handler，但它并非 UART 那种意义上的 HAL 句柄）。它不过是一个 C 结构体，其实例（指针）指向外设的真实地址。让我们看看其中一个。
 
 在前面的章节中，我们使用以下代码配置了 PA5 引脚：
 
@@ -137,7 +137,7 @@ uint32_t Alternate;
 
 ### 该结构体中每个字段的作用如下：
 
-- Pin：这是我们要配置的引脚编号，从 0 开始。例如，对于 PA5 引脚，其值为 `GPIO_PIN_5`⁵。我们可以使用同一个 `GPIO_InitTypeDef` 实例
+- Pin：要配置的 GPIO 引脚位掩码（从 0 开始编号，第 i 个引脚对应第 i 位）。例如，对于 PA5 引脚，其值为 `GPIO_PIN_5`⁵。我们可以使用同一个 `GPIO_InitTypeDef` 实例
 
 ⁴这并不完全准确，因为 HAL 为了节省 RAM 空间，将 GPIOA 定义为一个宏（`#define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)`）。⁵请注意，`GPIO_PIN_x` 是一个位掩码，其中第 i 个引脚对应 `uint16_t` 数据类型的第 i 位。例如，`GPIO_PIN_5` 的值为 0x0020，即十进制的 32。
 
@@ -146,14 +146,14 @@ uint32_t Alternate;
 - 来一次性配置多个引脚，通过执行按位或运算（例如，`GPIO_PIN_1 | GPIO_PIN_5 | GPIO_- PIN_6`）。
 - Mode：这是引脚的工作模式，它可以取表 6.2 中的值之一。稍后将详细介绍此字段。
 - Pull：根据表 6.3，指定所选引脚的上拉或下拉激活状态。
-- Speed：定义引脚的切换速度，它可以取特定 STM32 系列常量范围内的值。在每个 STM32 MCU 中，GPIO 都有一个最大切换频率。请查阅您的 MCU 数据手册中“绝对最大额定值”段落下的“输入/输出交流特性”部分。
+- Speed：定义 GPIO 的输出速度（输出边沿速度/驱动速度），它可以取特定 STM32 系列常量范围内的值。在每款 STM32 MCU 中，GPIO 都有一个最大翻转频率。请查阅您的 MCU 数据手册中“绝对最大额定值”段落下的“输入/输出交流特性”部分。
 - Alternate：指定要关联到该引脚的外设。稍后将详细介绍。
 
 表 6.2：GPIO 可用的 `GPIO_InitTypeDef.Mode`
 
 引脚模式 | 描述
 ---|---
-`GPIO_MODE_INPUT` | 输入浮空模式⁶
+`GPIO_MODE_INPUT` | 输入模式（`Pull = GPIO_NOPULL` 时为浮空输入）⁶
 `GPIO_MODE_OUTPUT_PP` | 输出推挽模式
 `GPIO_MODE_OUTPUT_OD` | 输出开漏模式
 `GPIO_MODE_AF_PP` | 复用功能推挽模式
@@ -199,7 +199,7 @@ STM32 MCU 提供了灵活的 GPIO 管理。图 6.4⁷ 展示了 STM32F072 微控
 当 I/O 端口编程为 `GPIO_MODE_ANALOG` 时：
 
 - 输出缓冲器被禁用。
-- 施密特触发器输入被去激活，使得对于 I/O 引脚的任何模拟值，功耗为零。
+- 施密特触发器输入被去激活，从而对 I/O 引脚上的任何模拟值都不产生额外功耗。
 - 弱上拉和下拉电阻被硬件禁用。
 - 对输入数据寄存器的读访问获取值 0。
 
@@ -230,7 +230,7 @@ GPIO 模式 `GPIO_MODE_EVT_*` 与睡眠模式相关。当 I/O 被配置为在这
 
 然而，请记住，这种实现方案可能会在 STM32 系列之间有所不同，特别是对于低功耗系列。始终参考您的 MCU 参考手册，其中准确描述了 I/O 模式及其对 MCU 工作和功耗的影响。
 
-同样重要的是要指出，这种灵活性对于硬件设计也是一个优势。例如，如果您的应用程序需要外部上拉电阻，则无需使用外部专用电阻，因为相应的 GPIO 可以通过设置 `GPIO_InitType- Def.Mode = GPIO_MODE_OUTPUT_PP` 和 `GPIO_InitTypeDef.Pull = GPIO_PULLUP` 进行配置。这节省了 PCB 上的空间并简化了 BOM（物料清单）。
+同样重要的是要指出，这种灵活性对于硬件设计也是一个优势。例如，如果您的应用程序需要外部上拉电阻，则无需使用外部专用电阻，因为相应的 GPIO 可以通过设置 `GPIO_InitTypeDef.Mode = GPIO_MODE_OUTPUT_PP` 和 `GPIO_InitTypeDef.Pull = GPIO_PULLUP` 进行配置。这节省了 PCB 上的空间并简化了 BOM（物料清单）。
 
 ![Image from PDF page 168](../images/page-0168-image-01.png)
 
@@ -272,7 +272,7 @@ HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 ![Image from PDF page 170](../images/page-0170-image-01.png)
 
-## 6.3 驱动 GPIO
+## 6.3 GPIO 的读写与控制
 
 CubeHAL 提供了四个操作例程，用于读取、更改和锁定 I/O 的状态。要读取 I/O 的状态，我们可以使用以下函数：
 
@@ -280,13 +280,13 @@ CubeHAL 提供了四个操作例程，用于读取、更改和锁定 I/O 的状�
 GPIO_PinState HAL_GPIO_ReadPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 ```
 
-该函数接受 GPIO 描述符和引脚编号。当 I/O 为低电平时，它返回 GPIO_PIN_RESET；当为高电平时，返回 GPIO_PIN_SET。相反，要更改 I/O 状态，我们有以下函数：
+该函数接受 GPIO 端口指针（`GPIO_TypeDef *GPIOx`）和引脚编号。当 I/O 为低电平时，它返回 GPIO_PIN_RESET；当为高电平时，返回 GPIO_PIN_SET。相反，要更改 I/O 状态，我们有以下函数：
 
 ```text
 void HAL_GPIO_WritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)
 ```
 
-该函数接受 GPIO 描述符、引脚编号和期望的状态。如果我们只想简单地反转 I/O 状态，则可以使用这个便捷的例程：
+该函数接受 GPIO 端口指针（`GPIO_TypeDef *GPIOx`）、引脚编号和期望的状态。如果我们只想简单地反转 I/O 状态，则可以使用这个便捷的例程：
 
 ```text
 void HAL_GPIO_TogglePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin).
@@ -298,7 +298,7 @@ void HAL_GPIO_TogglePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin).
 HAL_StatusTypeDef HAL_GPIO_LockPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin).
 ```
 
-## 6.4 去初始化 GPIO
+## 6.4 GPIO 反初始化
 
 可以将 GPIO 引脚设置为其默认复位状态（即输入浮空模式）。函数：
 

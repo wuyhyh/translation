@@ -53,7 +53,7 @@ GPIO 是 MCU 与外部世界通信的方式。每个电子板卡都使用可变�
 
 <p align="center"><img src="../images/page-0163-image-01.png" alt="Image from PDF page 163"></p>
 
-<p align="center">表 6.1：STM32F072 微控制器的 GPIO 外设内存映射</p>
+表 6.1：STM32F072 微控制器的 GPIO 外设内存映射
 
 通过修改和读取这些映射区域中的每个寄存器来控制外设。例如，继续 GPIOA 外设的例子，要将 PA5 引脚配置为输出引脚，我们必须配置 MODER 寄存器，使得位 [11:10] 被配置为 01（对应通用输出模式），如图 6.3 所示。接下来，为了将引脚拉高，我们必须设置输出数据寄存器（ODR）中对应的位 [5]，根据表 6.1，该位映射到 GPIOA + 0x14 内存位置，即 0x4800 0000 + 0x14。
 
@@ -150,7 +150,7 @@ typedef struct {
 - Speed：定义 GPIO 的输出速度（输出边沿速度/驱动速度），它可以取特定 STM32 系列常量范围内的值。在每款 STM32 MCU 中，GPIO 都有一个最大翻转频率。请查阅您的 MCU 数据手册中“绝对最大额定值”段落下的“输入/输出交流特性”部分。
 - Alternate：指定要关联到该引脚的外设。稍后将详细介绍。
 
-<p align="center">表 6.2：GPIO 可用的 <code>GPIO_InitTypeDef.Mode</code></p>
+表 6.2：GPIO 可用的 `GPIO_InitTypeDef.Mode`
 
 引脚模式 | 描述
 ---|---
@@ -167,7 +167,7 @@ typedef struct {
 `GPIO_MODE_EVT_FALLING` | 外部事件模式，下降沿触发检测
 `GPIO_MODE_EVT_RISING_FALLING` | 外部事件模式，上升/下降沿触发检测
 
-<p align="center">表 6.3：GPIO 可用的 <code>GPIO_InitTypeDef.Pull</code> 模式</p>
+表 6.3：GPIO 可用的 `GPIO_InitTypeDef.Pull` 模式
 
 引脚模式 | 描述
 ---|---

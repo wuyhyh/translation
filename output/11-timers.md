@@ -2578,8 +2578,7 @@ cycles--; /* We subtract the cycle used to transfer CYCCNT content to cycles var
 void delayUS_DWT(uint32_t us) {
   volatile uint32_t cycles = (SystemCoreClock/1000000L)*us;
   volatile uint32_t start = DWT->CYCCNT;
-  do
-  {
+  do{
   } while(DWT->CYCCNT - start < cycles);
 }
 #pragma GCC pop_options

@@ -105,13 +105,13 @@ $$
 
 ```c
 typedef struct {
-  ADC_TypeDef *Instance; /* Pointer to ADC descriptor */
-  ADC_InitTypeDef Init; /* ADC initialization parameters */
-  __IO uint32_t NbrOfCurrentConversionRank; /* ADC number of current conversion rank */
-  DMA_HandleTypeDef *DMA_Handle; /* Pointer to the DMA handle */
-  HAL_LockTypeDef Lock; /* ADC locking object */
-  __IO uint32_t State; /* ADC communication state */
-  __IO uint32_t ErrorCode; /* Error code */
+    ADC_TypeDef *Instance; /* Pointer to ADC descriptor */
+    ADC_InitTypeDef Init; /* ADC initialization parameters */
+    __IO uint32_t NbrOfCurrentConversionRank; /* ADC number of current conversion rank */
+    DMA_HandleTypeDef *DMA_Handle; /* Pointer to the DMA handler */
+    HAL_LockTypeDef Lock; /* ADC locking object */
+    __IO uint32_t State; /* ADC communication state */
+    __IO uint32_t ErrorCode; /* Error code */
 } ADC_HandleTypeDef;
 ```
 
@@ -131,18 +131,27 @@ ADC 配置通过使用 C 结构体 `ADC_InitTypeDef` 的实例来完成，其定
 
 ```c
 typedef struct {
-  uint32_t ClockPrescaler; /* Selects the ADC clock frequency */
-  uint32_t Resolution; /* Configures the ADC resolution mode */
-  uint32_t ScanConvMode; /* The scan sequence direction. */
-  uint32_t ContinuousConvMode; /* Specifies whether the conversion is performed in Continuous or Single mode */
-  uint32_t DataAlign; /* Specifies whether the ADC data alignment is left or right */
-  uint32_t NbrOfConversion; /* Specifies the number of ranks converted within the regular group sequencer */
-  uint32_t NbrOfDiscConversion; /* Specifies the number of discontinuous conversions in the main sequence of the regular group */
-  uint32_t DiscontinuousConvMode; /* Specifies whether the regular-group sequence is complete or discontinuous */
-  uint32_t ExternalTrigConv; /* Selects the external event used to trigger conversion */
-  uint32_t ExternalTrigConvEdge; /* Selects the external trigger edge and enables it */
-  uint32_t DMAContinuousRequests; /* Specifies whether DMA requests are performed once or continuously */
-  uint32_t EOCSelection; /* Specifies the EOC flag used for conversion polling and interruption */
+    uint32_t ClockPrescaler;        /* Selects the ADC clock frequency */
+    uint32_t Resolution;            /* Configures the ADC resolution mode */
+    uint32_t ScanConvMode;          /* The scan sequence direction. */
+    uint32_t ContinuousConvMode;    /* Specifies whether the conversion is performed in
+                                       Continuous or Single mode */
+    uint32_t DataAlign;             /* Specifies whether the ADC data alignment
+                                       is left or right */
+    uint32_t NbrOfConversion;       /* Specifies the number of ranks that will be converted
+                                       within the regular group sequencer */
+    uint32_t NbrOfDiscConversion;   /* Specifies the number of discontinuous conversions in
+                                       which the main sequence of regular group is subdivided */
+    uint32_t DiscontinuousConvMode; /* Specifies whether the conversion sequence of regular
+                                       group is performed in Complete-sequence/Discontinuous
+                                       sequence */
+    uint32_t ExternalTrigConv;      /* Select the external event used to trigger the start
+                                       of conversion */
+    uint32_t ExternalTrigConvEdge;  /* Select the external trigger edge and enable it */
+    uint32_t DMAContinuousRequests; /* Specifies whether the DMA requests are performed
+                                       in one shot or in continuous mode */
+    uint32_t EOCSelection;          /* Specifies what EOC (End Of Conversion) flag is used
+                                       for conversion polling and interruption */
 } ADC_InitTypeDef;
 ```
 
@@ -261,10 +270,10 @@ STM32 微控制器则提供了“组”的概念。一个组由一系列转换�
 
 ```c
 typedef struct {
-  uint32_t Channel; /* Specifies the channel to configure into ADC rank */
-  uint32_t Rank; /* Specifies the rank ID */
-  uint32_t SamplingTime; /* Sampling time value for the selected channel */
-  uint32_t Offset; /* Reserved for future use, can be set to 0 */
+    uint32_t Channel; /* Specifies the channel to configure into ADC rank */
+    uint32_t Rank; /* Specifies the rank ID */
+    uint32_t SamplingTime; /* Sampling time value for the selected channel */
+    uint32_t Offset; /* Reserved for future use, can be set to 0 */
 } ADC_ChannelConfTypeDef;
 ```
 
@@ -308,7 +317,7 @@ CubeHAL 及其非线性演变
 在轮询模式下，我们使用函数
 
 ```c
-HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef *hadc, uint32_t Timeout);
+HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef* hadc, uint32_t Timeout);
 ```
 
 来确定 A/D 转换何时完成，并且结果可用在 ADC 数据寄存器中。该函数接受指向 ADC 句柄描述符的指针和一个 Timeout 值，该值表示我们愿意等待的最大时间（以毫秒为单位）。或者，我们可以传递 `HAL_MAX_DELAY` 以无限期等待。
@@ -316,7 +325,7 @@ HAL_StatusTypeDef HAL_ADC_PollForConversion(ADC_HandleTypeDef *hadc, uint32_t Ti
 要获取结果，我们可以使用函数：
 
 ```c
-uint32_t HAL_ADC_GetValue(ADC_HandleTypeDef *hadc);
+uint32_t HAL_ADC_GetValue(ADC_HandleTypeDef* hadc);
 ```
 
 我们现在终于准备好分析一个完整的示例了。我们将首先查看用于执行轮询模式转换的 API。正如您将看到的，与之前在其他外设中所见相比，这里没有什么新内容。
@@ -340,7 +349,7 @@ $$
 **Filename:** `Core/Src/main-ex1.c`
 
 ```c
-/* Private variables ---------------------------------------------------------*/
+/*Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart2;
 char msg[30];
@@ -348,36 +357,39 @@ uint16_t rawValue;
 float temp;
 
 int main(void) {
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    /*Reset of all peripherals, Initializes the Flash interface and the Systick.*/
+    HAL_Init();
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    /*Configure the system clock */
+    SystemClock_Config();
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_USART2_UART_Init();
-  MX_ADC1_Init();
+    /*Initialize all configured peripherals */
+    MX_GPIO_Init();
+    MX_USART2_UART_Init();
+    MX_ADC1_Init();
 
-  /* Starts the ADC */
-  HAL_ADC_Start(&hadc1);
+    /*Starts the ADC */
+    HAL_ADC_Start(&hadc1);
 
-  while (1) {
-    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-    rawValue = HAL_ADC_GetValue(&hadc1);
-    temp = ((float)rawValue) / 4095 * 3300;
-    temp = ((temp - 760.0) / 2.5) + 25;
-    sprintf(msg, "ADC rawValue: %hu\r\n", rawValue);
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-    sprintf(msg, "Temperature: %f\r\n", temp);
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-  }
+    while (1) {
+        HAL_ADC_PollForConversion(&hadc1,HAL_MAX_DELAY);
+
+        rawValue = HAL_ADC_GetValue(&hadc1);
+        temp = ((float)rawValue) / 4095 * 3300;
+        temp = ((temp - 760.0) / 2.5) + 25;
+
+        sprintf(msg, "ADC rawValue: %hu\r\n",rawValue);
+        HAL_UART_Transmit(&huart2,(uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+        sprintf(msg, "Temperature: %f\r\n",temp);
+        HAL_UART_Transmit(&huart2,(uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+    }
 }
 
 static void MX_ADC1_Init(void) {
-  ADC_ChannelConfTypeDef sConfig = {0};
-  /** Configure the global features of the ADC (Clock, Resolution,
-   * Data Alignment and number of conversion) */
+    ADC_ChannelConfTypeDef sConfig = {0};
+    /**Configure the global features of the ADC (Clock, Resolution,
+     * Data Alignment and number of conversion) */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
@@ -443,34 +455,38 @@ CubeF1 HAL 中的 HAL_ADC 模块与其他 HAL 略有不同。要启动由软件�
 
 ```c
 int main(void) {
-  HAL_Init();
-  Nucleo_BSP_Init();
+    HAL_Init();
+    Nucleo_BSP_Init();
 
-  /* Initialize all configured peripherals */
-  MX_ADC1_Init();
-  HAL_NVIC_SetPriority(ADC_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(ADC_IRQn);
-  HAL_ADC_Start_IT(&hadc1);
+    /*Initialize all configured peripherals */
+    MX_ADC1_Init();
 
-  while (1);
+    HAL_NVIC_SetPriority(ADC_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(ADC_IRQn);
+
+    HAL_ADC_Start_IT(&hadc1);
+
+    while (1);
 }
 
 void ADC_IRQHandler(void) {
-  HAL_ADC_IRQHandler(&hadc1);
+    HAL_ADC_IRQHandler(&hadc1);
 }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-  char msg[30];
-  uint16_t rawValue;
-  float temp;
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+    char msg[30];
+    uint16_t rawValue;
+    float temp;
 
-  rawValue = HAL_ADC_GetValue(&hadc1);
-  temp = ((float)rawValue) / 4095 * 3300;
-  temp = ((temp - 760.0) / 2.5) + 25;
-  sprintf(msg, "rawValue: %hu\r\n", rawValue);
-  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-  sprintf(msg, "Temperature: %f\r\n", temp);
-  HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+    rawValue = HAL_ADC_GetValue(&hadc1);
+    temp = ((float)rawValue) / 4095 * 3300;
+    temp = ((temp - 760.0) / 2.5) + 25;
+
+    sprintf(msg, "rawValue: %hu\r\n",rawValue);
+    HAL_UART_Transmit(&huart2,(uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+
+    sprintf(msg, "Temperature: %f\r\n",temp);
+    HAL_UART_Transmit(&huart2,(uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 }
 ```
 
@@ -499,65 +515,65 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 
 ```c
 static void MX_ADC1_Init(void) {
-  ADC_ChannelConfTypeDef sConfig = {0};
+    ADC_ChannelConfTypeDef sConfig = {0};
 
-  /** Configure the global features of the ADC (Clock, Resolution,
-   * Data Alignment and number of conversion) */
-  hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
-  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.ScanConvMode = ENABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
-  hadc1.Init.DiscontinuousConvMode = DISABLE;
-  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 3;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
-  HAL_ADC_Init(&hadc1);
+    /**Configure the global features of the ADC (Clock, Resolution,
+     * Data Alignment and number of conversion) */
+    hadc1.Instance = ADC1;
+    hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
+    hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+    hadc1.Init.ScanConvMode = ENABLE;
+    hadc1.Init.ContinuousConvMode = DISABLE;
+    hadc1.Init.DiscontinuousConvMode = DISABLE;
+    hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+    hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+    hadc1.Init.NbrOfConversion = 3;
+    hadc1.Init.DMAContinuousRequests = DISABLE;
+    hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+    HAL_ADC_Init(&hadc1);
 
-  /** Configure for the selected ADC regular channel its corresponding
-   * rank in the sequencer and its sample time. */
-  sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
-  sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
-  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+    /**Configure for the selected ADC regular channel its corresponding
+     * rank in the sequencer and its sample time. */
+    sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 
-  sConfig.Rank = 2;
-  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+    sConfig.Rank = 2;
+    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 
-  sConfig.Rank = 3;
-  HAL_ADC_ConfigChannel(&hadc1, &sConfig);
+    sConfig.Rank = 3;
+    HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 
-  /* ADC1 DMA Init */
-  hdma_adc1.Instance = DMA2_Stream0;
-  hdma_adc1.Init.Channel = DMA_CHANNEL_0;
-  hdma_adc1.Init.Direction = DMA_PERIPH_TO_MEMORY;
-  hdma_adc1.Init.PeriphInc = DMA_PINC_DISABLE;
-  hdma_adc1.Init.MemInc = DMA_MINC_ENABLE;
-  hdma_adc1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
-  hdma_adc1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-  hdma_adc1.Init.Mode = DMA_NORMAL;
-  hdma_adc1.Init.Priority = DMA_PRIORITY_LOW;
-  hdma_adc1.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
-  if (HAL_DMA_Init(&hdma_adc1) != HAL_OK);
+    /*ADC1 DMA Init */
+    hdma_adc1.Instance = DMA2_Stream0;
+    hdma_adc1.Init.Channel = DMA_CHANNEL_0;
+    hdma_adc1.Init.Direction = DMA_PERIPH_TO_MEMORY;
+    hdma_adc1.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_adc1.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_adc1.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hdma_adc1.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    hdma_adc1.Init.Mode = DMA_NORMAL;
+    hdma_adc1.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_adc1.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    if (HAL_DMA_Init(&hdma_adc1) != HAL_OK);
 
-  __HAL_LINKDMA(&hadc1, DMA_Handle, hdma_adc1);
+    __HAL_LINKDMA(&hadc1,DMA_Handle,hdma_adc1);
 }
 
 static void MX_DMA_Init(void) {
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA2_CLK_ENABLE();
+    /*DMA controller clock enable */
+    __HAL_RCC_DMA2_CLK_ENABLE();
 
-  /* DMA interrupt init */
-  /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 1, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+    /*DMA interrupt init */
+    /*DMA2_Stream0_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 1, 0);
+    HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 }
 
 void DMA2_Stream0_IRQHandler(void) {
-  HAL_DMA_IRQHandler(&hdma_adc1);
+    HAL_DMA_IRQHandler(&hdma_adc1);
 }
 ```
 
@@ -574,41 +590,41 @@ float temp;
 volatile uint8_t convCompleted = 0;
 
 int main(void) {
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    /*Reset of all peripherals, Initializes the Flash interface and the Systick.*/
+    HAL_Init();
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    /*Configure the system clock */
+    SystemClock_Config();
 
-  /* Initialize all configured peripherals */
-  MX_DMA_Init();
-  MX_ADC1_Init();
-  MX_GPIO_Init();
-  MX_USART2_UART_Init();
+    /*Initialize all configured peripherals */
+    MX_DMA_Init();
+    MX_ADC1_Init();
+    MX_GPIO_Init();
+    MX_USART2_UART_Init();
 
-  /* Starts the ADC in DMA mode */
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)rawValues, 3);
+    /*Starts the ADC in DMA mode*/
+    HAL_ADC_Start_DMA(&hadc1,(uint32_t*)rawValues, 3);
 
-  while (!convCompleted);
+    while(!convCompleted);
 
-  HAL_ADC_Stop_DMA(&hadc1);
+    HAL_ADC_Stop_DMA(&hadc1);
 
-  for (uint8_t i = 0; i < hadc1.Init.NbrOfConversion; i++) {
-    temp = ((float)rawValues[i]) / 4095 * 3300;
-    temp = ((temp - 760.0) / 2.5) + 25;
+    for(uint8_t i = 0;i < hadc1.Init.NbrOfConversion;i++) {
+        temp = ((float)rawValues[i]) / 4095 * 3300;
+        temp = ((temp - 760.0) / 2.5) + 25;
 
-    sprintf(msg, "rawValue %d: %hu\r\n", i, rawValues[i]);
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+        sprintf(msg, "rawValue%d: %hu\r\n",i, rawValues[i]);
+        HAL_UART_Transmit(&huart2,(uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
-    sprintf(msg, "Temperature %d: %f\r\n", i, temp);
-    HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-  }
+        sprintf(msg, "Temperature%d: %f\r\n",i, temp);
+        HAL_UART_Transmit(&huart2,(uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+    }
 
-  while (1);
+    while (1);
 }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-  convCompleted = 1;
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+    convCompleted = 1;
 }
 ```
 
@@ -694,7 +710,7 @@ ADC 转换可以由定时器驱动，既支持中断模式，也支持直接存�
 **Filename:** `Core/Src/main-ex3.c`
 
 ```c
-/** Configure the global features of the ADC (Clock, Resolution,
+/**Configure the global features of the ADC (Clock, Resolution,
  * Data Alignment and number of conversion) */
 hadc1.Instance = ADC1;
 hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
@@ -710,7 +726,7 @@ hadc1.Init.DMAContinuousRequests = ENABLE;
 hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
 HAL_ADC_Init(&hadc1);
 
-/** Configure for the selected ADC regular channel its corresponding
+/**Configure for the selected ADC regular channel its corresponding
  * rank in the sequencer and its sample time. */
 sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
 sConfig.Rank = 1;
@@ -723,7 +739,7 @@ HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 sConfig.Rank = 3;
 HAL_ADC_ConfigChannel(&hadc1, &sConfig);
 
-/* ADC1 DMA Init */
+/*ADC1 DMA Init */
 hdma_adc1.Instance = DMA2_Stream0;
 hdma_adc1.Init.Channel = DMA_CHANNEL_0;
 hdma_adc1.Init.Direction = DMA_PERIPH_TO_MEMORY;
@@ -736,27 +752,27 @@ hdma_adc1.Init.Priority = DMA_PRIORITY_LOW;
 hdma_adc1.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
 HAL_DMA_Init(&hdma_adc1);
 
-__HAL_LINKDMA(&hadc1, DMA_Handle, hdma_adc1);
+__HAL_LINKDMA(&hadc1,DMA_Handle,hdma_adc1);
 }
 
 static void MX_TIM2_Init(void) {
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
+    TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 47999;
-  htim2.Init.Period = 1999;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  HAL_TIM_Base_Init(&htim2);
+    htim2.Instance = TIM2;
+    htim2.Init.Prescaler = 47999;
+    htim2.Init.Period = 1999;
+    htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    HAL_TIM_Base_Init(&htim2);
 
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
+    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+    HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig);
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig);
 }
 ```
 
@@ -772,42 +788,42 @@ DMA 相应地被配置为工作在循环模式（第 122 行）。
 
 ```c
 int main(void) {
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    /*Reset of all peripherals, Initializes the Flash interface and the Systick.*/
+    HAL_Init();
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    /*Configure the system clock */
+    SystemClock_Config();
 
-  /* Initialize all configured peripherals */
-  MX_DMA_Init();
-  MX_ADC1_Init();
-  MX_GPIO_Init();
-  MX_USART2_UART_Init();
-  MX_TIM2_Init();
+    /*Initialize all configured peripherals */
+    MX_DMA_Init();
+    MX_ADC1_Init();
+    MX_GPIO_Init();
+    MX_USART2_UART_Init();
+    MX_TIM2_Init();
 
-  HAL_TIM_Base_Start(&htim2);
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t *)rawValues, 3);
+    HAL_TIM_Base_Start(&htim2);
+    HAL_ADC_Start_DMA(&hadc1,(uint32_t*)rawValues, 3);
 
-  while (1) {
-    while (!convCompleted);
+    while(1) {
+        while(!convCompleted);
 
-    for (uint8_t i = 0; i < hadc1.Init.NbrOfConversion; i++) {
-      temp = ((float)rawValues[i]) / 4095 * 3300;
-      temp = ((temp - 760.0) / 2.5) + 25;
+        for(uint8_t i = 0;i < hadc1.Init.NbrOfConversion;i++) {
+            temp = ((float)rawValues[i]) / 4095 * 3300;
+            temp = ((temp - 760.0) / 2.5) + 25;
 
-      sprintf(msg, "rawValue %d: %hu\r\n", i, rawValues[i]);
-      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+            sprintf(msg, "rawValue%d: %hu\r\n",i, rawValues[i]);
+            HAL_UART_Transmit(&huart2,(uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
-      sprintf(msg, "Temperature %d: %f\r\n", i, temp);
-      HAL_UART_Transmit(&huart2, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+            sprintf(msg, "Temperature%d: %f\r\n",i, temp);
+            HAL_UART_Transmit(&huart2,(uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+        }
+
+        convCompleted = 0;
     }
-
-    convCompleted = 0;
-  }
 }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
-  convCompleted = 1;
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+    convCompleted = 1;
 }
 ```
 
@@ -827,7 +843,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
 HAL_ADC_Ex 模块提供了三个用于处理 ADC 校准的有用函数。
 
 ```c
-HAL_ADCEx_Calibration_Start(ADC_HandleTypeDef *hadc, uint32_t SingleDiff);
+HAL_ADCEx_Calibration_Start(ADC_HandleTypeDef* hadc, uint32_t SingleDiff);
 ```
 
 自动执行校准程序。必须在 HAL_ADC_Init() 之后立即调用，并且在使用任何 HAL_ADC_Start_XXX() 例程之前调用。传递参数 ADC_SINGLE_ENDED 将执行单端校准，而传递 ADC_DIFFERENTIAL_ENDED 则执行差分输入校准。
@@ -835,14 +851,14 @@ HAL_ADCEx_Calibration_Start(ADC_HandleTypeDef *hadc, uint32_t SingleDiff);
 函数
 
 ```c
-uint32_t HAL_ADCEx_Calibration_GetValue(ADC_HandleTypeDef *hadc, uint32_t SingleDiff);
+uint32_t HAL_ADCEx_Calibration_GetValue(ADC_HandleTypeDef* hadc, uint32_t SingleDiff);
 ```
 
 用于检索计算出的校准值，而
 
 ```c
-HAL_StatusTypeDef HAL_ADCEx_Calibration_SetValue(ADC_HandleTypeDef *hadc,
-  uint32_t SingleDiff, uint32_t CalibrationFactor);
+HAL_StatusTypeDef HAL_ADCEx_Calibration_SetValue(ADC_HandleTypeDef* hadc,
+                                                  uint32_t SingleDiff, uint32_t CalibrationFactor);
 ```
 
 用于设置自定义导出的校准值。有关更多信息，请参阅你所考虑的微控制器的参考手册。

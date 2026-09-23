@@ -101,8 +101,8 @@ typedef struct {
 要配置 DAC 通道，可以使用以下函数：
 
 ```c
-HAL_StatusTypeDef HAL_DAC_ConfigChannel(DAC_HandleTypeDef *hdac,
-                                        DAC_ChannelConfTypeDef *sConfig,
+HAL_StatusTypeDef HAL_DAC_ConfigChannel(DAC_HandleTypeDef* hdac,
+                                        DAC_ChannelConfTypeDef* sConfig,
                                         uint32_t Channel);
 ```
 
@@ -119,7 +119,7 @@ DAC 外设既可以手动驱动，也可以使用 DMA 和触发源（例如专�
 第一步是调用以下函数启动外设：
 
 ```c
-HAL_StatusTypeDef HAL_DAC_Start(DAC_HandleTypeDef *hdac, uint32_t Channel);
+HAL_StatusTypeDef HAL_DAC_Start(DAC_HandleTypeDef* hdac, uint32_t Channel);
 ```
 
 该函数接受指向 `DAC_HandleTypeDef` 结构体实例的指针，以及要激活的通道（`DAC_CHANNEL_1` 或 `DAC_CHANNEL_2`）。
@@ -127,8 +127,8 @@ HAL_StatusTypeDef HAL_DAC_Start(DAC_HandleTypeDef *hdac, uint32_t Channel);
 启用 DAC 通道后，可以调用以下函数执行转换：
 
 ```c
-HAL_StatusTypeDef HAL_DAC_SetValue(DAC_HandleTypeDef *hdac, uint32_t Channel,
-                                   uint32_t Alignment, uint32_t Data);
+HAL_StatusTypeDef HAL_DAC_SetValue(DAC_HandleTypeDef* hdac, uint32_t Channel,
+                                    uint32_t Alignment, uint32_t Data);
 ```
 
 其中，`Alignment` 参数可以取值 `DAC_ALIGN_8B_R`，以 8 位模式驱动 DAC；也可以取值 `DAC_ALIGN_12B_L` 或 `DAC_ALIGN_12B_R`，以 12 位模式驱动 DAC，分别传递左对齐或右对齐的输出值。
@@ -155,18 +155,18 @@ int main(void) {
     HAL_DAC_Init(&hdac);
     HAL_DAC_Start(&hdac, DAC_CHANNEL_2);
 
-    while (1) {
+    while(1) {
         int i = 2000;
-        while (i < 4000) {
+        while(i < 4000) {
             HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, i);
             HAL_Delay(1);
-            i += 4;
+            i+=4;
         }
 
-        while (i > 2000) {
+        while(i > 2000) {
             HAL_DAC_SetValue(&hdac, DAC_CHANNEL_2, DAC_ALIGN_12B_R, i);
             HAL_Delay(1);
-            i -= 4;
+            i-=4;
         }
     }
 }
@@ -188,7 +188,8 @@ void MX_DAC_Init(void) {
     HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_2);
 
     /* DAC GPIO Configuration
-       PA5 ------> DAC_OUT2 */
+       PA5 ------> DAC_OUT2
+    */
     GPIO_InitStruct.Pin = GPIO_PIN_5;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -207,8 +208,8 @@ DAC 外设最常见的用途是以给定频率生成模拟波形（例如音频�
 要启动 DAC 并在 DMA 模式下执行传输，需要配置相应的 DMA 通道/流对，并使用以下函数：
 
 ```c
-HAL_StatusTypeDef HAL_DAC_Start_DMA(DAC_HandleTypeDef *hdac, uint32_t Channel,
-                                    uint32_t *pData, uint32_t Length,
+HAL_StatusTypeDef HAL_DAC_Start_DMA(DAC_HandleTypeDef* hdac, uint32_t Channel,
+                                    uint32_t* pData, uint32_t Length,
                                     uint32_t Alignment);
 ```
 
@@ -237,7 +238,7 @@ $$
 **文件名：** `Core/Src/main-ex2.c`
 
 ```c
-#define PI      3.14159
+#define PI     3.14159
 #define SAMPLES 200
 
 /* Private variables ---------------------------------------------------------*/
@@ -259,17 +260,16 @@ int main(void) {
     MX_TIM6_Init();
     MX_DAC_Init();
 
-    for (uint16_t i = 0; i < SAMPLES; i++) {
-        value = (uint16_t) rint((sinf(((2 * PI) / SAMPLES) * i) + 1) * 2048);
+    for (uint16_t i = 0; i < SAMPLES; i ++) {
+        value = (uint16_t) rint((sinf((( 2*PI)/SAMPLES)*i)+1)*2048);
         IV[i] = value < 4096 ? value : 4095;
     }
 
     HAL_DAC_Init(&hdac);
     HAL_TIM_Base_Start(&htim6);
-    HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)IV, SAMPLES,
-                      DAC_ALIGN_12B_R);
+    HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t*)IV, SAMPLES, DAC_ALIGN_12B_R);
 
-    while (1);
+    while(1);
 }
 ```
 
@@ -293,7 +293,8 @@ void MX_DAC_Init(void) {
     HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1);
 
     /**DAC GPIO Configuration
-       PA4 ------> DAC_OUT1 */
+       PA4 ------> DAC_OUT1
+    */
     GPIO_InitStruct.Pin = GPIO_PIN_4;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -310,7 +311,7 @@ void MX_DAC_Init(void) {
     hdma_dac_ch1.Init.Priority = DMA_PRIORITY_LOW;
     HAL_DMA_Init(&hdma_dac_ch1);
 
-    __HAL_LINKDMA(&hdac, DMA_Handle1, hdma_dac_ch1);
+    __HAL_LINKDMA(&hdac,DMA_Handle1,hdma_dac_ch1);
 }
 
 /* TIM6 init function */
@@ -348,7 +349,7 @@ void MX_TIM6_Init(void) {
 如果希望知道 DMA 模式下的一次 DAC 转换何时完成，可以实现以下回调函数：
 
 ```c
-void HAL_DACEx_ConvCpltCallbackChX(DAC_HandleTypeDef *hdac);
+void HAL_DACEx_ConvCpltCallbackChX(DAC_HandleTypeDef* hdac);
 ```
 
 该函数由 `HAL_DMA_IRQHandler()` 例程自动调用；该例程由与 DAC 外设关联的 DMA 通道 ISR 调用。函数名末尾的 X 必须根据所使用的通道替换为 1 或 2。
@@ -380,9 +381,9 @@ $$
 要生成三角波形，可以使用以下函数：
 
 ```c
-HAL_StatusTypeDef HAL_DACEx_TriangleWaveGenerate(DAC_HandleTypeDef *hdac,
-                                                 uint32_t Channel,
-                                                 uint32_t Amplitude);
+HAL_StatusTypeDef HAL_DACEx_TriangleWaveGenerate(DAC_HandleTypeDef* hdac,
+                                                  uint32_t Channel,
+                                                  uint32_t Amplitude);
 ```
 
 该函数接受要使用的 DAC 通道和所需的幅度。波形偏移量则使用 `HAL_DAC_SetValue()` 例程配置。生成三角波的完整步骤如下：
@@ -408,7 +409,7 @@ STM32 DAC 还能够使用伪随机数生成器生成噪声波形（见图 13.5�
 要生成噪声波形，可以使用以下 HAL 例程：
 
 ```c
-HAL_StatusTypeDef HAL_DACEx_NoiseWaveGenerate(DAC_HandleTypeDef *hdac,
+HAL_StatusTypeDef HAL_DACEx_NoiseWaveGenerate(DAC_HandleTypeDef* hdac,
                                                uint32_t Channel,
                                                uint32_t Amplitude);
 ```

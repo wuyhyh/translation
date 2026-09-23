@@ -613,7 +613,7 @@ void HAL_DACEx_ConvCpltCallbackChX(DAC_HandleTypeDef* hdac);
 
 仔细阅读
 
-![Image from PDF page 412](../images/page-0412-image-02.png)
+
 
 请注意，在 STM32G4 系列中，DAC 外设寄存器必须以字（32 位）为单位进行访问。因此，Nucleo-G474RE 开发板的用户会发现 IV 数组和 value 变量被定义为 unit32_t。
 

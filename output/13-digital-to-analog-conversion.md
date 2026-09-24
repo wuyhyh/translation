@@ -14,17 +14,17 @@ DAC 通道可以配置为 8 位或 12 位模式，两个通道的转换可以独
 
 DAC 将数字量转换为模拟信号，输出信号与提供的参考电压 VREF 成正比（见图 13.1）。DAC 有许多类别，包括脉冲宽度调制型 DAC（PWM）、插值型 DAC、Sigma-Delta DAC 和高速 DAC。我们在第 11 章中分析了如何使用 STM32 定时器生成 PWM 信号，并通过 RC 低通滤波器利用该信号生成输出正弦波。
 
-![Image from PDF page 403](../images/page-0403-image-01.png)
+<p align="center"><img src="../images/page-0403-image-01.png" alt="Image from PDF page 403"></p>
 
-图 13.1：DAC 的一般结构
+<p align="center">图 13.1：DAC 的一般结构</p>
 
 <!-- page: 404 -->
 
 STM32 微控制器中可用的 DAC 外设基于通用的 R-2R 电阻梯形网络。电阻梯形网络由重复的电阻单元组成，是一种使用高精度电阻构成的重复网络来实现数模转换的廉价而简单的方法。该网络在参考电压与地之间充当可编程分压器。
 
-![Image from PDF page 404](../images/page-0404-image-01.png)
+<p align="center"><img src="../images/page-0404-image-01.png" alt="Image from PDF page 404"></p>
 
-图 13.2：R-2R 网络如何用于将数字量转换为模拟信号
+<p align="center">图 13.2：R-2R 网络如何用于将数字量转换为模拟信号</p>
 
 图 13.2 展示了一个 8 位 R-2R 电阻梯形网络。DAC 的每一位都由数字逻辑门驱动。理想情况下，这些门在 V = 0（逻辑 0）和 V = VREF（逻辑 1）之间切换输入位。R-2R 网络对这些数字位进行加权，使其对输出电压 VOUT 的贡献不同。根据哪些位被置为 1、哪些位被置为 0，输出电压将在 0 与 VREF 减去最小步长之间取相应的阶梯值（最小步长对应最低有效位为 0 的情况）。
 
@@ -56,7 +56,7 @@ $$
 
 表 13.1 列出了本书所讨论的 9 块 Nucleo 开发板所搭载的 STM32 MCU 中，DAC 外设的确切数量及其相关输出通道数量。
 
-![Image from PDF page 405](../images/page-0405-image-01.jpeg)
+<p align="center"><img src="../images/page-0405-image-01.jpeg" alt="Image from PDF page 405"></p>
 
 表 13.1：配备 Nucleo 开发板的 STM32 MCU 中 DAC 外设的可用性
 
@@ -339,10 +339,10 @@ void MX_TIM6_Init(void) {
 
 函数 `MX_DAC_Init()` 配置 DAC，使第一个通道在 TIM6 的 TRGO 线生成时执行转换。此外，DMA 也进行了相应配置，并设置为循环模式，以便持续将初始化向量的内容传输到 DAC 数据寄存器。函数 `MX_TIM6_Init()` 设置 TIM6，使其以 10 kHz 的频率溢出，从而触发内部连接到 DAC 的 TRGO 线。最后，第 [29:32] 行根据公式 [3] 生成初始化向量。TIM6 启动后，DAC 以 DMA 模式启动，并使用该向量为 DAC 提供数据。
 
-![Image from PDF page 412](../images/page-0412-image-01.jpeg)
+<p align="center"><img src="../images/page-0412-image-01.jpeg" alt="Image from PDF page 412"></p>
 
 
-图 13.3：使用 DAC 外设生成的输出正弦波
+<p align="center">图 13.3：使用 DAC 外设生成的输出正弦波</p>
 
 将示波器探头连接到 Nucleo 开发板的 PA4 引脚，即可看到 DAC 生成的输出正弦波（见图 13.3）。
 
@@ -364,9 +364,9 @@ void HAL_DACEx_ConvCpltCallbackChX(DAC_HandleTypeDef* hdac);
 
 在许多音频应用中，生成三角波非常有用。虽然完全可以使用前面介绍的 DMA 技术生成三角波，但 STM32 DAC 允许在硬件层面生成三角波形。
 
-![Image from PDF page 413](../images/page-0413-image-01.jpeg)
+<p align="center"><img src="../images/page-0413-image-01.jpeg" alt="Image from PDF page 413"></p>
 
-图 13.4：使用 DAC 生成的三角波
+<p align="center">图 13.4：使用 DAC 生成的三角波</p>
 
 图 13.4 展示了定义三角波形状的三个参数。下面分别进行分析。
 
@@ -402,9 +402,9 @@ STM32 DAC 还能够使用伪随机数生成器生成噪声波形（见图 13.5�
 
 要生成可变幅度的伪噪声，DAC 中提供了一个 LFSR（线性反馈移位寄存器）。该寄存器预加载值 0xAAA，可以被部分或完全屏蔽。随后，该值与 DAC 数据寄存器的内容相加（不发生溢出），所得结果用作输出值。
 
-![Image from PDF page 414](../images/page-0414-image-01.jpeg)
+<p align="center"><img src="../images/page-0414-image-01.jpeg" alt="Image from PDF page 414"></p>
 
-图 13.5：使用 DAC 生成的噪声波形
+<p align="center">图 13.5：使用 DAC 生成的噪声波形</p>
 
 要生成噪声波形，可以使用以下 HAL 例程：
 

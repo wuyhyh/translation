@@ -71,7 +71,7 @@ STM32 定时器主要可分为九个类别。让我们简要查看每一个类�
 
 <!-- page: 296 -->
 
-![Image from PDF page 296](../images/page-0296-image-01.png)
+<p align="center"><img src="../images/page-0296-image-01.png" alt="Image from PDF page 296"></p>
 
 表 11.1：每个定时器类别的最相关特性
 
@@ -86,7 +86,7 @@ STM32 定时器主要可分为九个类别。让我们简要查看每一个类�
 
 <!-- page: 297 -->
 
-![Image from PDF page 297](../images/page-0297-image-01.png)
+<p align="center"><img src="../images/page-0297-image-01.png" alt="Image from PDF page 297"></p>
 
 表 11.2：每个 STM32 系列实现了哪些定时器
 
@@ -126,7 +126,7 @@ STM32F1 微控制器与较新的 STM32 微控制器之间）的实现可能略�
 
 <!-- page: 299 -->
 
-![Image from PDF page 299](../images/page-0299-image-01.png)
+<p align="center"><img src="../images/page-0299-image-01.png" alt="Image from PDF page 299"></p>
 
 表 11.3：配备九个 Nucleo 板的每个 STM32 微控制器实现了哪些定时器
 
@@ -154,9 +154,9 @@ typedef struct {
 } TIM_HandleTypeDef;
 ```
 
-![Image from PDF page 300](../images/page-0300-image-01.png)
+<p align="center"><img src="../images/page-0300-image-01.png" alt="Image from PDF page 300"></p>
 
-图 11.1：三大类定时器之间的关系
+<p align="center">图 11.1：三大类定时器之间的关系</p>
 
 让我们更深入地看看这个结构体中最重要的字段。
 
@@ -459,9 +459,9 @@ CubeMX 可以将配置基本定时器所需的工作量降至最低。一旦通�
 `MX_TIMx_Init()` 函数内生成所有必要的初始化代码。此外，始终在同一个配置对话框中，可以启用与定时器相关的 IRQ（中断请求）和 DMA
 请求。
 
-![Image from PDF page 308](../images/page-0308-image-01.jpeg)
+<p align="center"><img src="../images/page-0308-image-01.jpeg" alt="Image from PDF page 308"></p>
 
-图 11.2：CubeMX 允许轻松生成配置定时器所需的代码
+<p align="center">图 11.2：CubeMX 允许轻松生成配置定时器所需的代码</p>
 
 ## 11.3 通用定时器
 
@@ -476,9 +476,9 @@ CubeMX 可以将配置基本定时器所需的工作量降至最低。一旦通�
 时钟被选为源时为定时器提供时钟：内部时钟 CK_INT 输入预分频器（PSC），后者进而决定计数器寄存器（CNT）递增/递减的速度。该计数器与自动重装载寄存器（其中填入
 `TIM_Base_InitTypeDef.Period` 字段的值）的内容进行比较。当它们匹配时，生成 UEV 事件；若已启用，则触发相应的 IRQ（中断请求）。
 
-![Image from PDF page 309](../images/page-0309-image-01.jpeg)
+<p align="center"><img src="../images/page-0309-image-01.jpeg" alt="Image from PDF page 309"></p>
 
-图 11.3：通用定时器的结构
+<p align="center">图 11.3：通用定时器的结构</p>
 
 查看图 11.3，我们可以看到定时器可以从其他来源接收“激励”信号。这些可以分为两个主要组：
 
@@ -576,9 +576,9 @@ CubeMX 工具识别 MCO 引脚以及附录 C 中对应的引脚图）。
 
 <!-- page: 313 -->
 
-![Image from PDF page 313](../images/page-0313-image-01.jpeg)
+<p align="center"><img src="../images/page-0313-image-01.jpeg" alt="Image from PDF page 313"></p>
 
-图 11.4：如何在 Nucleo-F072RB 板上将 MCO 引脚路由到 TIM3_ETR 引脚
+<p align="center">图 11.4：如何在 Nucleo-F072RB 板上将 MCO 引脚路由到 TIM3_ETR 引脚</p>
 
 MCO 引脚已启用并连接到 HSI 时钟源。以下代码显示了示例中最相关的部分。
 
@@ -750,9 +750,9 @@ Nucleo，请使用 CubeMX 工具来识别 MCO 和 TI2FP2 引脚）。
 
 <!-- page: 318 -->
 
-![Image from PDF page 318](../images/page-0318-image-01.jpeg)
+<p align="center"><img src="../images/page-0318-image-01.jpeg" alt="Image from PDF page 318"></p>
 
-图 11.5：如何在 Nucleo-F072RB 开发板上将 MCO 引脚路由到 TI2FP2 引脚
+<p align="center">图 11.5：如何在 Nucleo-F072RB 开发板上将 MCO 引脚路由到 TI2FP2 引脚</p>
 
 MCO 引脚已启用并连接到 HSI 时钟源，如前一个示例所示。以下代码展示了该示例中最相关的部分。
 
@@ -810,24 +810,24 @@ ETR1 和 ETR2 模式。
 
 要将定时器配置为外部时钟模式 2，只需从配置面板中选择 ETR2 作为时钟源即可，如图 11.6 所示。
 
-![Image from PDF page 319](../images/page-0319-image-01.jpeg)
+<p align="center"><img src="../images/page-0319-image-01.jpeg" alt="Image from PDF page 319"></p>
 
-图 11.6：如何从 IP 面板中选择 ETR2 模式
+<p align="center">图 11.6：如何从 IP 面板中选择 ETR2 模式</p>
 
 选择时钟源后，可以从配置中设置外部时钟滤波器、极性和预分频器，如图 11.7 所示。
 
 <!-- page: 320 -->
 
-![Image from PDF page 320](../images/page-0320-image-01.jpeg)
+<p align="center"><img src="../images/page-0320-image-01.jpeg" alt="Image from PDF page 320"></p>
 
-图 11.7：如何配置工作在 ETR2 模式的定时器
+<p align="center">图 11.7：如何配置工作在 ETR2 模式的定时器</p>
 
 要将定时器配置为外部时钟模式 1，我们需要从从模式条目中选择该模式，然后选择触发源（在这种情况下，它是定时器的时钟源），如图
 11.8 所示。
 
-![Image from PDF page 320](../images/page-0320-image-02.jpeg)
+<p align="center"><img src="../images/page-0320-image-02.jpeg" alt="Image from PDF page 320"></p>
 
-图 11.8：如何从 IP 树面板中选择 ETR1 模式
+<p align="center">图 11.8：如何从 IP 树面板中选择 ETR1 模式</p>
 
 选择时钟源后，可以从定时器配置对话框中设置其他配置参数（此处未显示）。
 
@@ -845,23 +845,23 @@ ITR0、ITR1、ITR2 和 ITR3。主定时器既可以提供时钟源（因此充�
 
 的 TRGO 线连接到 TIM2 定时器的 ITR0 线，如图 11.9 所示。
 
-![Image from PDF page 321](../images/page-0321-image-01.png)
+<p align="center"><img src="../images/page-0321-image-01.png" alt="Image from PDF page 321"></p>
 
-图 11.9：TIM1 可以通过 ITR0 线向 TIM2 定时器提供信号
+<p align="center">图 11.9：TIM1 可以通过 ITR0 线向 TIM2 定时器提供信号</p>
 
 配置为从模式的定时器也可以同时作为另一个定时器的主定时器，从而允许创建复杂的定时器网络。例如，图 11.10 展示了定时器如何级联连接，而图
 11.11 展示了定时器如何通过主从模式的组合形成层次结构。请注意，TIM1、TIM2 和 TIM3 通过同一条 ITR0
 线内部互连。这使得可以根据同一事件（复位、使能、更新等）同步多个定时器。
 
-![Image from PDF page 321](../images/page-0321-image-02.png)
+<p align="center"><img src="../images/page-0321-image-02.png" alt="Image from PDF page 321"></p>
 
-图 11.10：主从模式的组合允许将定时器配置为级联
+<p align="center">图 11.10：主从模式的组合允许将定时器配置为级联</p>
 
 <!-- page: 322 -->
 
-![Image from PDF page 322](../images/page-0322-image-01.png)
+<p align="center"><img src="../images/page-0322-image-01.png" alt="Image from PDF page 322"></p>
 
-图 11.11：主从模式的组合允许将定时器配置为层次结构
+<p align="center">图 11.11：主从模式的组合允许将定时器配置为层次结构</p>
 
 要配置定时器为主模式，我们使用函数 HAL_TIMEx_MasterConfigSynchronization () 和结构体 TIM_MasterConfigTypeDef 的一个实例，其定义如下：
 
@@ -1007,9 +1007,9 @@ $$
 
 <!-- page: 326 -->
 
-![Image from PDF page 326](../images/page-0326-image-01.jpeg)
+<p align="center"><img src="../images/page-0326-image-01.jpeg" alt="Image from PDF page 326"></p>
 
-图 11.12：如何在 Nucleo-F072R8 板上将 TI2FP2 引脚连接到 AVDD 引脚
+<p align="center">图 11.12：如何在 Nucleo-F072R8 板上将 TI2FP2 引脚连接到 AVDD 引脚</p>
 
 #### 11.3.2.1 启用触发相关中断
 
@@ -1032,15 +1032,15 @@ HAL_TIM_SlaveConfigSynchron ()。显然，必须定义相应的定时器 ISR，�
 
 <!-- page: 327 -->
 
-![Image from PDF page 327](../images/page-0327-image-01.jpeg)
+<p align="center"><img src="../images/page-0327-image-01.jpeg" alt="Image from PDF page 327"></p>
 
-图 11.13：如何配置定时器为从模式
+<p align="center">图 11.13：如何配置定时器为从模式</p>
 
 相反，要启用主模式，我们需要从定时器配置视图中选择该模式，如图 11.14 所示。选择主模式后，即可选择 TRGO 源事件。
 
-![Image from PDF page 327](../images/page-0327-image-02.jpeg)
+<p align="center"><img src="../images/page-0327-image-02.jpeg" alt="Image from PDF page 327"></p>
 
-图 11.14：如何配置定时器为主模式
+<p align="center">图 11.14：如何配置定时器为主模式</p>
 
 ### 11.3.3 通过软件生成定时器相关事件
 
@@ -1131,9 +1131,9 @@ UIF 标志（即生成更新事件，并由 HAL 调用 `HAL_TIM_PeriodElapsedCal
 
 <!-- page: 330 -->
 
-![Image from PDF page 330](../images/page-0330-image-01.png)
+<p align="center"><img src="../images/page-0330-image-01.png" alt="Image from PDF page 330"></p>
 
-图 11.15：通用定时器的三种主要计数模式
+<p align="center">图 11.15：通用定时器的三种主要计数模式</p>
 
 相反，当定时器以 TIM_COUNTERMODE_CENTERALIGNED 模式计数时，它从零开始向上计数至 Period 值：这会导致触发定时器中断（IRQ）并置位
 UIF 标志（即生成更新事件，并由 HAL 调用 HAL_TIM_PeriodElapsedCallback ()）。随后，定时器开始向下计数至零，并生成另一个更新事件（以及相应的中断）。
@@ -1150,15 +1150,15 @@ UIF 标志（即生成更新事件，并由 HAL 调用 HAL_TIM_PeriodElapsedCall
 
 <!-- page: 331 -->
 
-![Image from PDF page 331](../images/page-0331-image-01.jpeg)
+<p align="center"><img src="../images/page-0331-image-01.jpeg" alt="Image from PDF page 331"></p>
 
-图 11.16：通用定时器中输入通道的结构
+<p align="center">图 11.16：通用定时器中输入通道的结构</p>
 
 通用定时器和高级定时器提供的输入捕获模式允许计算施加到这些定时器提供的 4 个通道中每一个的外部信号的频率。并且捕获是对每个通道独立进行的。
 
-![Image from PDF page 331](../images/page-0331-image-02.png)
+<p align="center"><img src="../images/page-0331-image-02.png" alt="Image from PDF page 331"></p>
 
-图 11.17：外部信号输入定时器其中一个通道的捕获过程
+<p align="center">图 11.17：外部信号输入定时器其中一个通道的捕获过程</p>
 
 图 11.17 展示了捕获过程的工作原理。TIMx 是一个定时器，配置为以给定的 `TIMx_CLK` 时钟频率²⁷ 工作。这意味着它每 \(1 / f_{\mathrm{TIMx\_CLK}}\) 秒将 `TIMx_CNT` 寄存器递增一次，直到达到 Period 值。假设我们将一个方波信号施加到定时器的一个通道上，并配置定时器在输入信号的每个上升沿触发捕获，
 
@@ -1187,9 +1187,9 @@ $$
 另一个相关条件是 UEV 频率应低于采样信号频率。为什么这很重要是显而易见的：如果定时器运行速度比采样信号快，那么它将在能够采样信号边沿之前溢出（即
 Period 计数器耗尽）（见图 11.18）。因此，通常建议将 Period 值设置为最大值，并增加 Prescaler 因子以降低计数频率。
 
-![Image from PDF page 332](../images/page-0332-image-01.png)
+<p align="center"><img src="../images/page-0332-image-01.png" alt="Image from PDF page 332"></p>
 
-图 11.18：如果定时器运行速度比采样信号快，则会在检测到两个上升沿之前溢出
+<p align="center">图 11.18：如果定时器运行速度比采样信号快，则会在检测到两个上升沿之前溢出</p>
 
 要配置输入通道，我们使用函数 HAL_TIM_IC_ConfigChannel () 和 C 结构体 TIM_IC_InitTypeDef 的一个实例，其定义如下：
 
@@ -1309,9 +1309,9 @@ void HAL_TIM_IC_MspInit(TIM_HandleTypeDef* htim_ic) {
 
 <!-- page: 335 -->
 
-![Image from PDF page 335](../images/page-0335-image-01.png)
+<p align="center"><img src="../images/page-0335-image-01.png" alt="Image from PDF page 335"></p>
 
-图 11.19：如何在 Nucleo-F072RB 中连接 PA5 和 PA6 引脚
+<p align="center">图 11.19：如何在 Nucleo-F072RB 中连接 PA5 和 PA6 引脚</p>
 
 MX_TIM3_Init () 配置 TIM3 定时器，使其以约 0.732Hz
 的频率运行。随后，第一个通道被配置为在输入信号的每个上升沿触发捕获事件（TIM_DMA_ID_CC1）。然后，HAL_TIM_IC_MspInit ()
@@ -1385,9 +1385,9 @@ HAL_TIM_IC_Start_DMA () 函数（第 40 行）在第一个通道上启用 DMA �
 借助 CubeMX，配置通用定时器的输入通道以进入输入捕获模式变得轻而易举。为了将一个通道绑定到对应的输入（即 IC1 绑定到
 TI1），您需要为期望的通道选择“输入捕获直接模式”（Input capture direct mode），如图 11.20 所示。
 
-![Image from PDF page 337](../images/page-0337-image-01.jpeg)
+<p align="center"><img src="../images/page-0337-image-01.jpeg" alt="Image from PDF page 337"></p>
 
-图 11.20：如何启用通道的输入捕获模式
+<p align="center">图 11.20：如何启用通道的输入捕获模式</p>
 
 相反，为了将一对中的另一个通道（ (IC1,IC2) 或 (IC3,IC4)）映射到相同的输入（即对于 (IC1,IC2) 对，映射到 TI1 或
 TI2），您可以启用该对中的另一个通道为“输入捕获间接模式”（Input capture indirect mode），如图 11.21 所示。最后，从 TIMx
@@ -1395,9 +1395,9 @@ TI2），您可以启用该对中的另一个通道为“输入捕获间接模�
 
 <!-- page: 338 -->
 
-![Image from PDF page 338](../images/page-0338-image-01.jpeg)
+<p align="center"><img src="../images/page-0338-image-01.jpeg" alt="Image from PDF page 338"></p>
 
-图 11.21：如何启用通道的输入捕获间接模式
+<p align="center">图 11.21：如何启用通道的输入捕获间接模式</p>
 
 ### 11.3.6 输出比较模式
 
@@ -1561,9 +1561,9 @@ $$
 
 并且两个通道之间只有 10µs 的相位偏移，如图 11.22 所示。该 65535 值对应于定时器的 Period（周期）值，即定时器 CNT 寄存器达到的最大值。
 
-![Image from PDF page 342](../images/page-0342-image-01.jpeg)
+<p align="center"><img src="../images/page-0342-image-01.jpeg" alt="Image from PDF page 342"></p>
 
-图 11.22：通道 1 和通道 2 之间的翻转偏移
+<p align="center">图 11.22：通道 1 和通道 2 之间的翻转偏移</p>
 
 为了达到期望的切换频率³¹，我们需要在 TIM3 CNT 寄存器每 640 和 320 个计数时翻转输出。为此，我们可以定义以下回调例程：
 
@@ -1606,9 +1606,9 @@ __HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_2, (pulse + CH2_FREQ) - arr);
 HAL_TIM_OC_DelayElapsedCallback () 由 HAL 在通道 CCRx 寄存器与定时器计数器匹配时自动调用。因此，我们可以将通道 1 的
 Pulse（即 CCRx 寄存器）增加 CH1_FREQ，将通道 2 的 Pulse 增加 CH2_FREQ。这将导致相应通道以期望的频率切换，如图 11.23 所示。
 
-![Image from PDF page 343](../images/page-0343-image-01.jpeg)
+<p align="center"><img src="../images/page-0343-image-01.jpeg" alt="Image from PDF page 343"></p>
 
-图 11.23：通道 2 被配置为以通道 1 两倍的速度切换
+<p align="center">图 11.23：通道 2 被配置为以通道 1 两倍的速度切换</p>
 
 使用 DMA 模式和预初始化的向量也可以获得相同的结果，该向量最终可以使用 const 修饰符存储在闪存中：
 
@@ -1638,9 +1638,9 @@ $$
 的时间处于关闭状态。占空比并不说明持续时间有多长。对于 50% 占空比，“开启时间”可以是几分之一秒、一天，甚至一周，具体取决于周期的长度。脉宽是给定实际周期时
 TON 的持续时间。例如，假设周期为 1s，20% 的占空比会产生 200ms 的脉宽。
 
-![Image from PDF page 344](../images/page-0344-image-01.png)
+<p align="center"><img src="../images/page-0344-image-01.png" alt="Image from PDF page 344"></p>
 
-图 11.24：三种不同的占空比 - 50%、20% 和 80%
+<p align="center">图 11.24：三种不同的占空比 - 50%、20% 和 80%</p>
 
 图 11.24 显示了三种不同的占空比：50%、20% 和 80%。
 
@@ -1752,9 +1752,9 @@ void MX_TIM2_Init(void) {
 低通滤波器利用了电容的一个重要特性：能够阻断直流电流同时允许交流电流通过：给定由电阻-电容网络形成的 R/C 时间常数，滤波器会将频率高于
 RC 常数的交流信号短路到地，从而允许信号的直流分量和较低频率的交流电压通过。
 
-![Image from PDF page 347](../images/page-0347-image-02.png)
+<p align="center"><img src="../images/page-0347-image-02.png" alt="Image from PDF page 347"></p>
 
-图 11.25：使用电阻和电容实现的典型低通滤波器
+<p align="center">图 11.25：使用电阻和电容实现的典型低通滤波器</p>
 
 虽然这个电路非常简单，但为 R（电阻）和
 C（电容）选择合适的值包含一些设计决策：我们可以容忍多少纹波，以及滤波器需要多快响应。这两个参数是相互排斥的。在大多数滤波器中，我们希望拥有完美的滤波器——一个让所有低于截止频率的频率通过且没有电压纹波的滤波器。不幸的是，这种理想滤波器并不存在：为了将纹波降低到零，我们必须选择一个非常大的滤波器，这会导致输出稳定所需的时间很长。虽然这对于连续且固定的电压可能是可以接受的，但如果我们试图从
@@ -1779,9 +1779,9 @@ $$
 f_c = \frac{1}{2\pi \cdot 10^3 \cdot 10^{-5}} \approx 15.9\ \mathrm{Hz}
 $$
 
-![Image from PDF page 348](../images/page-0348-image-01.jpeg)
+<p align="center"><img src="../images/page-0348-image-01.jpeg" alt="Image from PDF page 348"></p>
 
-图 11.26：截止频率等于 15.9Hz 的低通滤波器的影响
+<p align="center">图 11.26：截止频率等于 15.9Hz 的低通滤波器的影响</p>
 
 图 11.27 展示了使用 4300K 电阻和 10µF 电容的低通滤波器的影响。这意味着截止频率等于：
 
@@ -1791,9 +1791,9 @@ $$
 
 如你所见，第二个滤波器允许 Vpp 约为 160mV，这对于许多应用来说是一个可以接受的电压差。
 
-![Image from PDF page 348](../images/page-0348-image-02.jpeg)
+<p align="center"><img src="../images/page-0348-image-02.jpeg" alt="Image from PDF page 348"></p>
 
-图 11.27：截止频率等于 3.7Hz 的低通滤波器的影响
+<p align="center">图 11.27：截止频率等于 3.7Hz 的低通滤波器的影响</p>
 
 通过改变输出电压（这意味着我们改变占空比），我们可以生成任意的输出波形，其频率是 PWM 周期的一部分。这里的基本思想
 
@@ -1802,9 +1802,9 @@ $$
 其方法是将我们想要的波形（例如正弦波）划分为 “x” 个分段。对于每个分段，我们都有一个 PWM 周期。TON 时间（即占空比）直接对应该分段中波形的幅度，该幅度使用
 sin () 函数计算得出。
 
-![Image from PDF page 349](../images/page-0349-image-01.png)
+<p align="center"><img src="../images/page-0349-image-01.png" alt="Image from PDF page 349"></p>
 
-图 11.28：如何使用多个 PWM 信号近似正弦波
+<p align="center">图 11.28：如何使用多个 PWM 信号近似正弦波</p>
 
 考虑图 11.28 中所示的示意图。这里正弦波被划分为 10 个步骤。因此，我们需要 10 个按正弦方式递增/递减的不同 PWM 脉冲。占空比为
 0% 的 PWM 脉冲代表最小幅度（0V），占空比为 100% 的脉冲代表最大幅度（3.3V）。由于我们的 PWM 脉冲电压在 0V 到 3.3V
@@ -1895,9 +1895,9 @@ Radians = π 180° × Degrees
 然而，在我们的情况下，我们将正弦波周期划分为 200 个步骤（即，我们将圆周划分为 200 个步骤），因此我们需要计算每个步骤的弧度值。但由于正弦函数在
 180° 到 360° 之间的角度给出负值（见图 11.29），我们需要对其进行缩放，因为 PWM 输出值不能为负。
 
-![Image from PDF page 351](../images/page-0351-image-01.jpeg)
+<p align="center"><img src="../images/page-0351-image-01.jpeg" alt="Image from PDF page 351"></p>
 
-图 11.29：正弦函数在 180° 到 360° 之间取的值
+<p align="center">图 11.29：正弦函数在 180° 到 360° 之间取的值</p>
 
 一旦生成了 IV 向量，我们就可以启动 DMA 模式下的 PWM。DMA1_Channel4 被配置为以循环模式工作，因此它会根据 IV 中包含的脉冲值自动设置
 TIMx_CCRx 寄存器的值。使用 DMA 模式下的定时器是生成任意函数而不引入延迟并影响 Cortex-M 内核的最佳方式。然而，通常 IV
@@ -1907,9 +1907,9 @@ TIMx_CCRx 寄存器的值。使用 DMA 模式下的定时器是生成任意函�
 
 <!-- page: 352 -->
 
-![Image from PDF page 352](../images/page-0352-image-01.jpeg)
+<p align="center"><img src="../images/page-0352-image-01.jpeg" alt="Image from PDF page 352"></p>
 
-图 11.30：定时器如何允许使用 PWM 近似 50Hz 正弦波
+<p align="center">图 11.30：定时器如何允许使用 PWM 近似 50Hz 正弦波</p>
 
 图 11.30 显示了 TIM3 通道 1 的输出：如你所见，使用适当的滤波级³⁷，很容易生成纯 50Hz 正弦波。
 
@@ -2033,9 +2033,9 @@ Nucleo-F072RB 上的 PA7 引脚拉高后，定时器将在 20 ms 的延迟后启
 
 <!-- page: 355 -->
 
-![Image from PDF page 355](../images/page-0355-image-01.jpeg)
+<p align="center"><img src="../images/page-0355-image-01.jpeg" alt="Image from PDF page 355"></p>
 
-图 11.31：单脉冲模式如何工作
+<p align="center">图 11.31：单脉冲模式如何工作</p>
 
 以单脉冲模式运行的定时器的输出通道甚至可以配置为 PWM 以外的其他模式。
 
@@ -2044,9 +2044,9 @@ Nucleo-F072RB 上的 PA7 引脚拉高后，定时器将在 20 ms 的延迟后启
 若要使用 CubeMX 启用 OPM 模式，第一步是独立配置通道 1 和通道 2，然后选中“单脉冲模式”（One Pulse Mode）复选框，如图 11.32
 所示。接下来，从 TIMx 配置视图（此处未显示）中，可以配置其他通道的设置。
 
-![Image from PDF page 355](../images/page-0355-image-02.jpeg)
+<p align="center"><img src="../images/page-0355-image-02.jpeg" alt="Image from PDF page 355"></p>
 
-图 11.32：如何在定时器中启用单脉冲模式
+<p align="center">图 11.32：如何在定时器中启用单脉冲模式</p>
 
 ### 11.3.9 编码器模式
 
@@ -2058,9 +2058,9 @@ Nucleo-F072RB 上的 PA7 引脚拉高后，定时器将在 20 ms 的延迟后启
 
 大多数现代家用和车载音响使用机械式旋转编码器进行音量控制。由于成本低廉且能够提供易于解释以提供运动相关信息（如速度）的信号，增量式旋转编码器是所有旋转编码器中使用最广泛的。
 
-![Image from PDF page 356](../images/page-0356-image-01.png)
+<p align="center"><img src="../images/page-0356-image-01.png" alt="Image from PDF page 356"></p>
 
-图 11.33：正交编码器在 A 和 B 通道上发出的方波
+<p align="center">图 11.33：正交编码器在 A 和 B 通道上发出的方波</p>
 
 它们使用两个称为 A 和 B 的输出，这些输出被称为正交输出，因为它们的相位相差 90 度，如图 11.33 所示。电机的方向取决于相位 A
 是否领先于相位 B，或者相位 B 是否领先于相位 A。可选的第三个通道，即索引脉冲，每转发生一次，用作测量绝对位置的参考。检测旋转编码器方向和位置的方法有多种。通过将
@@ -2071,9 +2071,9 @@ STM32 通用定时器提供了一种读取旋转编码器的便捷方式：这�
 
 <!-- page: 357 -->
 
-![Image from PDF page 357](../images/page-0357-image-01.png)
+<p align="center"><img src="../images/page-0357-image-01.png" alt="Image from PDF page 357"></p>
 
-图 11.34：编码器模式下的定时器如何计算编码器速度和方向
+<p align="center">图 11.34：编码器模式下的定时器如何计算编码器速度和方向</p>
 
 有两种可用的捕获模式：X2 和 X4。在 X2 模式下，CNT 寄存器仅在其中一个通道（T1 或 T2）的每个边沿处递增/递减。在 X4 模式下，CNT
 寄存器在两个通道的每个边沿处更新：这将捕获频率加倍。运动方向会自动推导出来，并通过 TIMx_DIR 寄存器提供给程序员，如图 11.34
@@ -2257,9 +2257,9 @@ TIM1，使得通道 A 和 B 生成的脉冲总和每秒小于 65535。为此，�
 若要使用 CubeMX 启用编码器模式，第一步是从 Combined Channels 组合框中启用此模式，如图 11.35 所示。接下来，在 TIMx
 配置视图（此处未显示）中，可以配置其他通道的设置。
 
-![Image from PDF page 361](../images/page-0361-image-01.jpeg)
+<p align="center"><img src="../images/page-0361-image-01.jpeg" alt="Image from PDF page 361"></p>
 
-图 11.35：如何在定时器中启用编码器模式
+<p align="center">图 11.35：如何在定时器中启用编码器模式</p>
 
 ### 11.3.10 通用定时器和高级定时器中的其他功能
 
@@ -2438,9 +2438,9 @@ CubeMX 允许轻松使用另一个定时器代替 SysTick。要执行此操作�
 
 <!-- page: 367 -->
 
-![Image from PDF page 367](../images/page-0367-image-01.jpeg)
+<p align="center"><img src="../images/page-0367-image-01.jpeg" alt="Image from PDF page 367"></p>
 
-图 11.36：如何选择另一个定时器作为系统时间基准源
+<p align="center">图 11.36：如何选择另一个定时器作为系统时间基准源</p>
 
 CubeMX 将生成一个名为 `stm32XXxx_hal_timebase_TIM.c` 的附加文件，其中包含 `HAL_InitTick()`（包含初始化定时器所需的所有代码，使其每
 1ms 溢出一次）、`HAL_SuspendTick()` 和 `HAL_ResumeTick()` 的定义，以及 `HAL_TIM_PeriodElapsedCallback()` 的定义，其中包含对
@@ -2513,7 +2513,7 @@ while(1) {
 
 我们可以使用连接到 PA5 引脚的示波器来检查，确认我们获得了所需的延迟：
 
-![Image from PDF page 369](../images/page-0369-image-01.jpeg)
+<p align="center"><img src="../images/page-0369-image-01.jpeg" alt="Image from PDF page 369"></p>
 
 这种延迟 1µs
 的方法是否一致？不幸的是，答案是否定的。首先，它仅在此特定微控制器（STM32F401RE）以全速（84MHz）运行时才有效。如果我们决定使用不同的时钟速度，我们需要通过测试重新调整它。其次，它受编译器优化的影响（我们很快就会看到），以及某些
@@ -2523,7 +2523,7 @@ PREFETCH_ENABLE, INSTRUCTION_CACHE_ENABLE, DATA_CACHE_ENABLE 来禁用）。
 让我们为“大小”启用 GCC 优化（-Os）。我们得到什么结果？在这种情况下，`delayUS()` 函数仅花费 72 个 CPU 周期，即约
 850ns。示波器证实了这一点：
 
-![Image from PDF page 369](../images/page-0369-image-02.jpeg)
+<p align="center"><img src="../images/page-0369-image-02.jpeg" alt="Image from PDF page 369"></p>
 
 如果我们启用最大速度优化（-O3）会发生什么？在这种情况下，我们只有 64 个 CPU 周期，即我们的 `delayUS()` 仅持续约
 750ns。然而，这个问题可以使用特定的 GCC pragma 指令来解决：
@@ -2586,14 +2586,14 @@ void delayUS_DWT(uint32_t us) {
 
 这个函数的精度如何？如果需要达到 1 µs 的最佳分辨率，该函数无法满足要求，示波器显示如下。
 
-![Image from PDF page 371](../images/page-0371-image-01.jpeg)
+<p align="center"><img src="../images/page-0371-image-01.jpeg" alt="Image from PDF page 371"></p>
 
 设置较高的编译器优化级别时可获得最佳性能。如图所示，对于期望的 1 µs 延迟，该函数给出的延迟约为 1.22 µs（慢了 22%）。然而，如果需要自旋
 10 µs，实际延迟为 10.5 µs（慢了 5%），更接近期望值。
 
 <!-- page: 372 -->
 
-![Image from PDF page 372](../images/page-0372-image-01.jpeg)
+<p align="center"><img src="../images/page-0372-image-01.jpeg" alt="Image from PDF page 372"></p>
 
 从 100µs 的延迟开始，误差完全可以忽略不计。
 

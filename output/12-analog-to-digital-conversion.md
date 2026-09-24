@@ -20,15 +20,15 @@
 
 列出了本书中考虑的九个 Nucleo 板所配备的所有 STM32 MCU 的确切 ADC 外设数量及其相关的输入源。
 
-![Image from PDF page 374](../images/page-0374-image-01.jpeg)
+<p align="center"><img src="../images/page-0374-image-01.jpeg" alt="Image from PDF page 374"></p>
 
 表 12.1：本书中使用的 Nucleo 板所配备的 STM32 MCU 中 ADC 外设的可用性
 
 各个通道的 A/D 转换可以以单次、连续、扫描或不连续模式执行。ADC 的结果存储在一个左对齐或右对齐的 16 位数据寄存器中。此外，ADC 还实现了模拟看门狗功能，该功能允许应用程序检测输入电压是否超出用户定义的高阈值或低阈值：如果发生这种情况，将触发一个专用的 IRQ。
 
-![Image from PDF page 374](../images/page-0374-image-02.jpeg)
+<p align="center"><img src="../images/page-0374-image-02.jpeg" alt="Image from PDF page 374"></p>
 
-图 12.1：ADC 的简化结构
+<p align="center">图 12.1：ADC 的简化结构</p>
 
 图 12.1 示意了 ADC 的结构²。输入选择和扫描控制单元负责选择 ADC 输入源。根据转换模式（单次、扫描或连续模式），该单元自动在输入通道之间切换，以便每个通道都可以被周期性采样。该单元的输出送入 ADC。
 
@@ -40,9 +40,9 @@
 
 模式。
 
-![Image from PDF page 375](../images/page-0375-image-01.jpeg)
+<p align="center"><img src="../images/page-0375-image-01.jpeg" alt="Image from PDF page 375"></p>
 
-图 12.2：SAR ADC 的内部结构
+<p align="center">图 12.2：SAR ADC 的内部结构</p>
 
 图 12.2 显示了构成图 12.1 中所示 SAR ADC 单元的主要模块。输入信号通过 SHA 单元。正如你在图 12.1 中看到的，一个开关和一个电容器与 ADC 输入串联。该部分代表了图 12.2 中所示的采样保持（Sample-and-Hold, SHA）单元，这是所有 ADC 都具备的功能。该单元在转换周期内保持输入信号恒定起着重要作用。得益于一个内部定时单元，该单元由可配置的时钟调节（我们稍后会看到），SAR 通过闭合/打开图 12.1 中的“开关”不断连接/断开输入源。为了保持输入电压水平恒定，SHA 由一个电容器网络实现：这确保了源信号在 A/D 转换期间保持在一定水平，这是一个需要一定时间的过程，具体取决于所选的转换频率。
 
@@ -83,17 +83,17 @@ $$
 
 <!-- page: 377 -->
 
-![Image from PDF page 377](../images/page-0377-image-01.jpeg)
+<p align="center"><img src="../images/page-0377-image-01.jpeg" alt="Image from PDF page 377"></p>
 
-图 12.3：SAR ADC 执行的转换过程
+<p align="center">图 12.3：SAR ADC 执行的转换过程</p>
 
 内部电容网络（记为 `C_ADC`）的充电由图 12.1 中的开关控制，该开关具有等于 `R_ADC` 的电阻。加上源电阻后，即 `R_TOT = R_ADC + R_IN`，完全充电保持电容所需的时间会增加。图 12.4 显示了模拟信号源电阻的影响。`C_ADC` 的有效充电由 `R_TOT` 控制，因此充电时间常数为 `t_C = (R_ADC + R_IN) × C_ADC`。如果采样时间小于通过 `R_TOT` 完全充电 `C_ADC` 所需的时间（`t_S < t_C`），则 ADC 转换得到的数字值会小于实际值。通常，需要等待 `t_C` 的若干倍才能达到合理的精度。
 
 <!-- page: 378 -->
 
-![Image from PDF page 378](../images/page-0378-image-01.jpeg)
+<p align="center"><img src="../images/page-0378-image-01.jpeg" alt="Image from PDF page 378"></p>
 
-图 12.4：ADC 电阻对模拟信号源的影响
+<p align="center">图 12.4：ADC 电阻对模拟信号源的影响</p>
 
 对于高速 A/D 转换，在板级设计时考虑 PCB 布局的影响和适当的去耦非常重要。ST 提供了一份编写良好的应用笔记 AN2834³⁴，其中提供了多个重要提示，以充分利用集成在 STM32 微控制器中的 ADC。
 
@@ -194,17 +194,17 @@ STM32 微控制器中实现的 ADC 提供了几种转换模式，以应对不同
 
 <!-- page: 381 -->
 
-![Image from PDF page 381](../images/page-0381-image-01.jpeg)
+<p align="center"><img src="../images/page-0381-image-01.jpeg" alt="Image from PDF page 381"></p>
 
-图 12.5：单通道单次转换模式
+<p align="center">图 12.5：单通道单次转换模式</p>
 
 #### 12.2.1.2 扫描单次转换模式
 
 此模式在某些 ST 文档中也被称为多通道单次模式，用于在独立模式下依次转换多个通道。利用序号（rank），您可以使用此 ADC 模式配置多达 16 个通道的任意顺序，每个通道可以具有不同的采样时间，并且顺序可自定义。例如，您可以执行图 12.6 中所示的序列。这样，在转换过程中无需停止 ADC 来重新配置下一个通道的不同采样时间。此模式节省了额外的 CPU 负载和大量的软件开发工作。扫描转换以 DMA 模式执行。
 
-![Image from PDF page 381](../images/page-0381-image-02.jpeg)
+<p align="center"><img src="../images/page-0381-image-02.jpeg" alt="Image from PDF page 381"></p>
 
-图 12.6：扫描单次转换模式
+<p align="center">图 12.6：扫描单次转换模式</p>
 
 例如，当系统启动依赖于某些参数时，可以使用此模式，例如在机械臂系统中需要知道机械臂尖端的坐标。在这种情况下，您必须在通电时读取机械臂系统中每个关节的位置，以确定机械臂尖端的坐标。此模式也可用于对多个信号电平（电压、压力、温度等）进行单次测量，以决定系统是否可以启动，从而保护人员和设备。
 
@@ -214,9 +214,9 @@ STM32 微控制器中实现的 ADC 提供了几种转换模式，以应对不同
 
 <!-- page: 382 -->
 
-![Image from PDF page 382](../images/page-0382-image-01.jpeg)
+<p align="center"><img src="../images/page-0382-image-01.jpeg" alt="Image from PDF page 382"></p>
 
-图 12.7：单通道连续转换
+<p align="center">图 12.7：单通道连续转换</p>
 
 例如，可以实现此 ADC 模式来监控电池电压、使用 PID 进行烤箱温度的测量和调节等。
 
@@ -224,9 +224,9 @@ STM32 微控制器中实现的 ADC 提供了几种转换模式，以应对不同
 
 此模式也被称为多通道连续模式，可用于在独立模式下依次转换多个通道。利用序号（rank），您可以配置多达 16 个通道的任意顺序，每个通道可以具有不同的采样时间和不同的顺序。此模式与多通道单次转换模式类似，不同之处在于它在序列中的最后一个通道转换结束后不会停止，而是从第一个通道重新开始转换序列，并无限继续。扫描转换以 DMA 模式执行。
 
-![Image from PDF page 382](../images/page-0382-image-02.jpeg)
+<p align="center"><img src="../images/page-0382-image-02.jpeg" alt="Image from PDF page 382"></p>
 
-图 12.8：扫描连续转换模式
+<p align="center">图 12.8：扫描连续转换模式</p>
 
 例如，此模式可用于监控多电池充电器中的多个电压和温度。在充电过程中读取每个电池的电压和温度。当电压或温度达到最大水平时，应将相应的电池从充电器断开。
 
@@ -236,9 +236,9 @@ STM32 微控制器中实现的 ADC 提供了几种转换模式，以应对不同
 
 <!-- page: 383 -->
 
-![Image from PDF page 383](../images/page-0383-image-01.jpeg)
+<p align="center"><img src="../images/page-0383-image-01.jpeg" alt="Image from PDF page 383"></p>
 
-图 12.9：注入转换模式
+<p align="center">图 12.9：注入转换模式</p>
 
 例如，此模式可用于将通道转换与事件同步。这在电机控制应用中很有用，因为晶体管开关会产生噪声，影响 ADC 测量并导致错误的转换。使用定时器，可以实现注入转换模式，从而将 ADC 测量延迟到晶体管开关之后。
 
@@ -260,9 +260,9 @@ STM32 微控制器中实现的 ADC 提供了几种转换模式，以应对不同
 
 STM32 微控制器则提供了“组”的概念。一个组由一系列转换组成，这些转换可以在任何通道上以任意顺序执行。虽然输入通道是固定的，并绑定到特定的微控制器引脚（即 IN0 是第一个通道，IN1 是第二个通道，依此类推），但可以在逻辑上重新排序以形成自定义的采样序列。通道的重新排序是通过为它们分配一个从 1 到 16 的索引来完成的。在 CubeHAL 中，这个索引被称为 rank（序号）。
 
-![Image from PDF page 384](../images/page-0384-image-01.jpeg)
+<p align="center"><img src="../images/page-0384-image-01.jpeg" alt="Image from PDF page 384"></p>
 
-图 12.10：如何使用 rank 重新排序输入通道
+<p align="center">图 12.10：如何使用 rank 重新排序输入通道</p>
 
 图 12.10 展示了这一概念。尽管 IN4 通道是固定的（例如，在 STM32F401RE 微控制器中，它连接到 PA4 引脚），但可以在逻辑上将其分配给 rank 1，使其成为第一个被采样的通道。提供此功能的微控制器还允许单独选择每个通道的采样速度，这与 F0/L0 微控制器不同，后者的配置是 ADC 全局的。
 
@@ -334,7 +334,7 @@ uint32_t HAL_ADC_GetValue(ADC_HandleTypeDef* hadc);
 
 <!-- page: 387 -->
 
-![Image from PDF page 387](../images/page-0387-image-01.png)
+<p align="center"><img src="../images/page-0387-image-01.png" alt="Image from PDF page 387"></p>
 
 表 12.3：STM32F401RE 微控制器中温度传感器的电气特性
 
@@ -437,7 +437,7 @@ static void MX_ADC1_Init(void) {
 >
 > 为了正常工作，此示例需要 newlib-nano 支持浮点数据类型。请遵循第 5 章中关于 I/O 重定向（I/O retargeting）一节的说明。
 
-![Image from PDF page 389](../images/page-0389-image-03.png)
+<p align="center"><img src="../images/page-0389-image-03.png" alt="Image from PDF page 389"></p>
 
 ¹⁰ 请注意，在撰写本章时（2021 年 9 月），CubeMX 不允许将最大 ADC 频率设置为 PCLK2 频率的一半，声称这在 F401RE P/N 中是不可能的。这对作者来说似乎并不正确，因为在旧版本的 CubeMX 中这是完全可能的，同时，ST 官方数据手册明确指出 ADC 能够以 PCLK2 时钟速度的一半运行。 ¹¹该数字来源于以下事实：以 48MHz 运行的 ADCCLK 接口每 1μs 执行 48 个周期。因此，480 个周期除以 48 周期/μs 得到 10μs。
 
@@ -445,7 +445,7 @@ static void MX_ADC1_Init(void) {
 
 CubeF1 HAL 中的 HAL_ADC 模块与其他 HAL 略有不同。要启动由软件驱动的转换，要求在 ADC 初始化期间指定参数 hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START。这与其他 HAL 的做法完全不同，也不清楚为什么 ST 开发人员采用了这种不同的方法。此外，即使 CubeMX 在生成相应的初始化代码时，也提供了不同的配置以考虑这一特殊性。有关完整的配置过程，请参阅书籍示例。
 
-![Image from PDF page 390](../images/page-0390-image-01.png)
+<p align="center"><img src="../images/page-0390-image-01.png" alt="Image from PDF page 390"></p>
 
 ### 12.2.5 中断模式下的 A/D 转换
 
@@ -632,7 +632,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
 
 上述代码行展示了 main() 函数。在第 56 行，通过传递指向 rawValues 数组的指针和转换次数来以 DMA 模式启动 ADC：这必须对应于第 94 行的 hadc1.Init.NbrOfConversion 字段（因此也对应于配置的通道序号数量）。最后，当 convCompleted 变量被 HAL_ADC_ConvCpltCallback() 例程（第 [76:78] 行）设置为 1 时，rawValues 数组的内容被转换，结果打印在 UART2 接口上。请注意，在第 60 行调用了 HAL_ADC_Stop_DMA()：执行此操作不是为了停止转换（转换在三个采样后会自动停止），而是为了允许后续在 DMA 模式下使用 ADC 外设（否则转换将无法启动）。
 
-![Image from PDF page 394](../images/page-0394-image-01.png)
+<p align="center"><img src="../images/page-0394-image-01.png" alt="Image from PDF page 394"></p>
 
 基于 STM32L0 的开发板用户会发现一个略有不同的示例。在 STM32L0 微控制器中，序号固定分配给 ADC 通道，并且序列反映通道编号方案。因此，序列中的序号数量由启用的通道数量定义，每个通道的序号由通道号定义（通道 0 固定在序号 0，通道 1 固定在序号 1，等等）。这意味着温度传感器通道不能分配给超过 1 个序号。
 
@@ -640,7 +640,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
 
 因此，对于 STM32L073RZ 示例，本例及下一个示例将仅循环使用一个通道。
 
-![Image from PDF page 395](../images/page-0395-image-01.png)
+<p align="center"><img src="../images/page-0395-image-01.png" alt="Image from PDF page 395"></p>
 
 #### 12.2.6.1 在 DMA 模式下对同一通道进行多次转换
 
@@ -869,15 +869,15 @@ HAL_StatusTypeDef HAL_ADCEx_Calibration_SetValue(ADC_HandleTypeDef* hadc,
 
 CubeMX 允许通过几个步骤轻松配置 ADC 外设。第一步是在 IP Tree 视图中启用所需的 ADC 通道，如图 12.11 所示。
 
-![Image from PDF page 401](../images/page-0401-image-01.png)
+<p align="center"><img src="../images/page-0401-image-01.png" alt="Image from PDF page 401"></p>
 
-图 12.11：IP Tree 视图窗格允许选择 ADC 的输入通道
+<p align="center">图 12.11：IP Tree 视图窗格允许选择 ADC 的输入通道</p>
 
 启用输入后，我们可以从 Configuration 视图中配置 ADC 外设，如图 12.12 所示。
 
-![Image from PDF page 401](../images/page-0401-image-02.jpeg)
+<p align="center"><img src="../images/page-0401-image-02.jpeg" alt="Image from PDF page 401"></p>
 
-图 12.12：CubeMX 中的 ADC 配置视图
+<p align="center">图 12.12：CubeMX 中的 ADC 配置视图</p>
 
 这些字段反映了迄今为止看到的 ADC 配置参数。只有一部分容易让新手用户感到困惑：通道配置的方式。事实上，我们首先需要设置 Number of Conversion 字段来配置使用的通道数量。接下来，（这非常重要）我们需要在配置对话框的其他位置点击，以便 Rank 字段的数量根据指定的通道数量增加
 
@@ -885,8 +885,8 @@ CubeMX 允许通过几个步骤轻松配置 ADC 外设。第一步是在 IP Tree
 
 在提供常规组和注入组概念的那些微控制器中，我们可以独立地为每个通道选择采样速度。CubeMX 将自动生成所有初始化代码。
 
-![Image from PDF page 402](../images/page-0402-image-01.png)
+<p align="center"><img src="../images/page-0402-image-01.png" alt="Image from PDF page 402"></p>
 
 如本章前面所述，CubeF1 HAL 中的 HAL_ADC 模块与其他 HAL 不同。要启动由软件驱动的转换，要求在 ADC 初始化期间指定参数 hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START。CubeMX 反映了这种不同的配置，但理解如何正确配置外设很棘手。因此，要启用软件驱动的转换，必须将 External Trigger Conversion Edge 参数设置为 Trigger detection on the rising edge。这使得 External Trigger Conversion Source 字段可用，并且你必须选择 Software trigger 条目。否则，你将无法执行转换。
 
-![Image from PDF page 402](../images/page-0402-image-02.png)
+<p align="center"><img src="../images/page-0402-image-02.png" alt="Image from PDF page 402"></p>

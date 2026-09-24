@@ -44,9 +44,9 @@ HAL_UART_Receive(&huart2, buf, 20, HAL_MAX_DELAY);
 
 在这里，我们将要从 UART2 接口读取二十个字节，因此我们在 SRAM 中分配了一个相同大小的数组（临时存储）。`HAL_UART_Receive()` 函数将访问 huart2.Instance->DR 数据寄存器二十次，以将字节从外设传输到内部存储器，此外它还会轮询 UART RXNE 标志以检测新数据何时准备好进行传输。在这些操作期间，CPU 将参与其中（见图 9.1），即使其角色“有限”于将数据从外设移动到 SRAM⁴。
 
-![Image from PDF page 237](../images/page-0237-image-01.png)
+<p align="center"><img src="../images/page-0237-image-01.png" alt="Image from PDF page 237"></p>
 
-图 9.1：从外设到 SRAM 传输期间的数据流
+<p align="center">图 9.1：从外设到 SRAM 传输期间的数据流</p>
 
 虽然这种方法一方面简化了硬件设计，但另一方面引入了性能惩罚。Cortex-M 内核“负责”将数据从外设存储器加载到 SRAM，这是一个阻塞操作，它不仅阻止 CPU 执行其他活动，还要求 CPU 等待“较慢”的单元完成其工作（如我们将在第 10 章中看到的，一些 STM32 外设通过较慢的总线连接到 MCU 内核）。这就是高性能微控制器提供专门用于在外设和集中式缓冲存储（即 SRAM）之间传输数据的硬件单元的原因。
 
@@ -66,9 +66,9 @@ HAL_UART_Receive(&huart2, buf, 20, HAL_MAX_DELAY);
 - DMA 总线将 DMA 的 AHB（Advanced High-performance Bus，高性能总线）主接口连接到总线矩阵。
 - AHB-APB 桥在 AHB 和高级外设总线（APB，Advanced Peripheral Bus）之间提供完全同步的连接，大多数外设都连接在 APB 总线上。
 
-![Image from PDF page 238](../images/page-0238-image-01.jpeg)
+<p align="center"><img src="../images/page-0238-image-01.jpeg" alt="Image from PDF page 238"></p>
 
-图 9.2：STM32F072 微控制器的总线架构
+<p align="center">图 9.2：STM32F072 微控制器的总线架构</p>
 
 我们在图 9.2 中遗漏了另一件事：从外设块（白色矩形）指向 DMA1 控制器的 DMA 请求箭头。它具体是做什么用的？在第 7 章中，我们看到 NVIC 控制器通知 Cortex-M 内核来自外设的异步中断请求（IRQ）。当外设准备好执行某些操作时（例如，UART 准备好接收数据或定时器溢出），它会将一条专用的 IRQ 线置为有效。MCU 内核在给定数量的周期后执行相应的 ISR，其中包含处理 IRQ 所需的代码。不要忘记，外设是从设备单元：它们不能独立访问总线。
 
@@ -96,7 +96,7 @@ HAL_UART_Receive(&huart2, buf, 20, HAL_MAX_DELAY);
 
 <!-- page: 240 -->
 
-![Image from PDF page 240](../images/page-0240-image-01.png)
+<p align="center"><img src="../images/page-0240-image-01.png" alt="Image from PDF page 240"></p>
 
 表 9.1：本书中使用的 Nucleo 开发板中可用的 DMA/通道数量
 
@@ -108,9 +108,9 @@ HAL_UART_Receive(&huart2, buf, 20, HAL_MAX_DELAY);
 
 <!-- page: 241 -->
 
-![Image from PDF page 241](../images/page-0241-image-01.png)
+<p align="center"><img src="../images/page-0241-image-01.png" alt="Image from PDF page 241"></p>
 
-图 9.3：F0/F1/F3/L0/L1/L4 微控制器中 DMA 结构的表示
+<p align="center">图 9.3：F0/F1/F3/L0/L1/L4 微控制器中 DMA 结构的表示</p>
 
 每个通道都有一个优先级，用于对 AHB 总线的访问进行仲裁。在像 STM32F1 这样的较旧微控制器中，优先级是固定的：通道 1 具有最高优先级，通道 7 具有最低优先级。在较新的微控制器中，可以使用四个等级来配置优先级。内部仲裁器根据各通道的优先级对来自各通道的请求进行仲裁。如果两个请求线激活请求且它们的通道具有相同的优先级，则编号较低的通道赢得竞争。
 
@@ -120,7 +120,7 @@ HAL_UART_Receive(&huart2, buf, 20, HAL_MAX_DELAY);
 
 <!-- page: 242 -->
 
-![Image from PDF page 242](../images/page-0242-image-01.jpeg)
+<p align="center"><img src="../images/page-0242-image-01.jpeg" alt="Image from PDF page 242"></p>
 
 表 9.2：在 STM32F030 微控制器中通道如何绑定到外设
 
@@ -130,9 +130,9 @@ HAL_UART_Receive(&huart2, buf, 20, HAL_MAX_DELAY);
 
 <!-- page: 243 -->
 
-![Image from PDF page 243](../images/page-0243-image-01.jpeg)
+<p align="center"><img src="../images/page-0243-image-01.jpeg" alt="Image from PDF page 243"></p>
 
-图 9.4：Connectivity Line（互联型）系列的 STM32F1 微控制器中的总线架构
+<p align="center">图 9.4：Connectivity Line（互联型）系列的 STM32F1 微控制器中的总线架构</p>
 
 在 Cortex-M0/0+ 内核中，DMA 和 Cortex 内核使用总线矩阵竞争对存储器和外设的访问。假设 CPU 正在对其内部寄存器（R0-R14）中包含的数据执行数学运算。如果 DMA 正在将数据传输到 SRAM，总线矩阵会仲裁来自 Cortex 内核对闪存存储器的访问，以加载下一条要执行的指令。因此，微控制器内核被阻塞，等待其轮次（稍后会有更多介绍）。在其他 Cortex-M 内核中，CPU 可以独立访问闪存存储器，从而提升整体性能。这是一个根本性的差异，它解释了 STM32F0 微控制器的价格：它们不仅可能拥有更少的 SRAM 和闪存并以较低频率运行，而且它们面临的是更简单且本质上性能较低的架构。
 
@@ -144,9 +144,9 @@ HAL_UART_Receive(&huart2, buf, 20, HAL_MAX_DELAY);
 
 最后，在特定条件下，直接存储器访问（DMA）还可以执行外设到外设的传输，我们将在下一节中看到。
 
-![Image from PDF page 244](../images/page-0244-image-01.png)
+<p align="center"><img src="../images/page-0244-image-01.png" alt="Image from PDF page 244"></p>
 
-图 9.5：STM32F2/F4/F7 微控制器中的 DMA 架构
+<p align="center">图 9.5：STM32F2/F4/F7 微控制器中的 DMA 架构</p>
 
 #### 9.1.2.2 F2/F4/F7 微控制器中的 DMA 实现
 
@@ -168,7 +168,7 @@ STM32F2/F4/F7 微控制器实现了更高级的 DMA 控制器，如图 9.5 所�
 
 每个 STM32F2/F4/F7 微控制器提供两个 DMA 控制器，总共 16 个独立的流。与其他 STM32 微控制器一样，通道在芯片设计期间绑定到一组固定的外设。表 9.3 显示了 STM32F401RE 微控制器中 DMA1 的流/通道请求映射。STM32F2/F4/F7 微控制器嵌入了由以下部分组成的多主/多从架构：
 
-![Image from PDF page 245](../images/page-0245-image-01.jpeg)
+<p align="center"><img src="../images/page-0245-image-01.jpeg" alt="Image from PDF page 245"></p>
 
 表 9.3：STM32F401RE 微控制器中 DMA1 的流/通道请求映射
 
@@ -201,9 +201,9 @@ STM32F2/F4/F7 微控制器实现了更高级的 DMA 控制器，如图 9.5 所�
 
 <!-- page: 247 -->
 
-![Image from PDF page 247](../images/page-0247-image-01.jpeg)
+<p align="center"><img src="../images/page-0247-image-01.jpeg" alt="Image from PDF page 247"></p>
 
-图 9.6：STM32F405 微控制器中的多层总线矩阵
+<p align="center">图 9.6：STM32F405 微控制器中的多层总线矩阵</p>
 
 #### 9.1.2.3 G0/G4/L4+/L5/H7 微控制器中的 DMA 实现
 
@@ -211,9 +211,9 @@ STM32G0/G4/L4+/L5/H7 微控制器中的 DMA 控制器架构与 STM32F0/F1/F3/L0/
 
 <!-- page: 248 -->
 
-![Image from PDF page 248](../images/page-0248-image-01.png)
+<p align="center"><img src="../images/page-0248-image-01.png" alt="Image from PDF page 248"></p>
 
-图 9.7：STM32G0/G4/L4+/L5/H7 系列中的整体 DMA 架构
+<p align="center">图 9.7：STM32G0/G4/L4+/L5/H7 系列中的整体 DMA 架构</p>
 
 图 9.7 展示了整体 DMA 架构。这是一个简化的图表，我们将在后面更详细地说明。在图表的右侧，你可以看到两个 DMA（DMA1, DMA2）。这两个 DMA 单元¹²的架构与图 9.3 中所示的架构相同，因此我们不会在这里详细阐述。与 F0/F1/F3/L0/L1/L4 系列的主要区别在于，这里的 DMA 请求源不是直接连接到各个外设，而是来自 DMAMUX 模块。顾名思义，DMAMUX 是一个作为复用器运行的模块。DMAMUX 的输出是请求线，这些请求线将触发源地址和目标地址之间的数据传输。DMAMUX 的输入由实际的外设请求线和一组不来自外设的请求组成，外加一组用于同步数据传输的线，我们将在后面看到。
 
@@ -221,9 +221,9 @@ STM32G0/G4/L4+/L5/H7 微控制器中的 DMA 控制器架构与 STM32F0/F1/F3/L0/
 
 <!-- page: 249 -->
 
-![Image from PDF page 249](../images/page-0249-image-01.png)
+<p align="center"><img src="../images/page-0249-image-01.png" alt="Image from PDF page 249"></p>
 
-图 9.8：DMAMUX 模块架构
+<p align="center">图 9.8：DMAMUX 模块架构</p>
 
 DMAMUX 架构稍微复杂一些，并在图 9.8 中更详细地展示。如你所见，请求复用器模块为两个 DMA 中的每个通道都有专用的子单元。根据具体系列，每个 DMA 单元提供 7 或 8 个通道。这意味着请求复用器集成了 14 或 16 个专用于各个通道的单元。每个通道单元都有一组请求线。这些请求线既来自外设，也来自我们将稍后详细说明的请求生成器模块。每个通道可以绑定到任何外设请求线，唯一的限制是一个请求线只能绑定到一个通道。
 
@@ -569,7 +569,7 @@ HAL_StatusTypeDef HAL_DMA_Start(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, ui
 - 配置 DMA1 通道（对于基于 STM32F4 的 Nucleo 开发板，则是 DMA1 通道/流组合）以执行存储器到外设的传输（参见表 9.15）
 - 使能相应的通道以执行传输，并在 DMA 模式下启用 UART。
 
-![Image from PDF page 260](../images/page-0260-image-01.png)
+<p align="center"><img src="../images/page-0260-image-01.png" alt="Image from PDF page 260"></p>
 
 表 9.15：书中使用的配备 Nucleo 开发板的 MCU 中 `USART_TX`/`USART_RX` DMA 通道的映射方式
 
@@ -647,7 +647,7 @@ HAL_StatusTypeDef HAL_DMA_PollForTransfer(DMA_HandleTypeDef *hdma, uint32_t Comp
 - 在 NVIC 控制器中启用相应的中断请求；
 - 使用函数 `HAL_DMA_Start_IT()`，该函数会自动为您执行所有必要的设置步骤，传入与 `HAL_DMA_Start()` 相同的参数。
 
-![Image from PDF page 262](../images/page-0262-image-01.png)
+<p align="center"><img src="../images/page-0262-image-01.png" alt="Image from PDF page 262"></p>
 
 关于 `XferCpltCallback`、`XferHalfCpltCallback` 和 `XferErrorCallback` 回调，有一点很重要需要指出：只有当我们不使用 CubeHAL 中介而直接使用 DMA 时，才需要设置它们。让我们澄清这个概念。
 
@@ -763,9 +763,9 @@ void DMA1_Channel4_5_IRQHandler(void) {
 
 `HAL_UART_RxCpltCallback()` 究竟是在哪里被调用的？在前面的段落中，我们看到 `DMA_HandleTypeDef` 包含一个指向函数的指针（名为 `XferCpltCallback`），该函数在 DMA 传输完成时由 `HAL_DMA_IRQHandler()` 例程调用。然而，当我们使用针对特定外设的 HAL 模块（本例中为 `HAL_UART`）时，我们不需要提供自己的回调：它们由 HAL 内部定义，HAL 使用它们来执行其活动。HAL 允许我们定义相应的回调函数（对于 DMA 模式下的 `UART_RX` 传输，即 `HAL_UART_RxCpltCallback()`），这些函数将由 HAL 自动调用，如图 9.7 所示。此规则适用于所有 HAL 模块。
 
-![Image from PDF page 265](../images/page-0265-image-01.png)
+<p align="center"><img src="../images/page-0265-image-01.png" alt="Image from PDF page 265"></p>
 
-图 9.7：由 `HAL_DMA_IRQHandler()` 生成的调用序列
+<p align="center">图 9.7：由 `HAL_DMA_IRQHandler()` 生成的调用序列</p>
 
 如您所见，一旦掌握了 DMA 控制器的工作原理，使用此传输模式来使用外设就变得很简单。
 
@@ -859,9 +859,9 @@ HAL_StatusTypeDef HAL_DMAEx_ChangeMemory(DMA_HandleTypeDef *hdma, uint32_t Addre
 
 CubeMX 可以将设置通道/流请求所需的工作量降到最低。一旦您在引脚布局（Pinout）部分启用了某个外设，请进入系统视图（System view）部分并点击 DMA 按钮。DMA 模式和配置面板将出现，如图 9.8 所示。
 
-![Image from PDF page 268](../images/page-0268-image-01.jpeg)
+<p align="center"><img src="../images/page-0268-image-01.jpeg" alt="Image from PDF page 268"></p>
 
-图 9.8：CubeMX 中的 DMA 配置对话框
+<p align="center">图 9.8：CubeMX 中的 DMA 配置对话框</p>
 
 该对话框包含两个选项卡。第一个选项卡与外设请求相关。例如，如果您想为 USART2 的发送模式（执行存储器到外设的传输）启用 DMA 请求，请点击“添加”（Add）按钮，并选择 `USART2_TX` 条目。CubeMX 会自动为您填充其余字段，并选择正确的通道。然后您可以为该请求分配优先级，并设置其他内容，如 DMA 模式、外设/存储器递增、与 DMAMUX 相关的设置等。同样，可以配置 DMA 通道/流以执行存储器到存储器的传输。
 
@@ -875,9 +875,9 @@ CubeMX 会在 `stm32XXxx_hal_msp.c` 文件中自动生成用于所使用请求/�
 
 这是所有初学者迟早都会犯的一个常见错误。当我们在局部作用域（即被调用例程的堆栈帧中）声明一个变量时，该变量将在该堆栈帧活动期间“存活”。当被调用的函数退出时，分配给该变量的堆栈区域会被重新分配用于其他用途（用于存储下一个被调用函数的参数或其他局部变量）。如果我们使用局部变量作为 DMA 传输的缓冲区（即向 DMA 存储器端口传递堆栈中存储器位置的地址），那么 DMA 很可能会访问包含其他数据的存储器区域，如果我们在执行外设到存储器传输，这将破坏该存储器区域，除非我们确定该函数的堆栈帧永远不会从堆栈中弹出（`main()` 函数内部声明的变量就属于这种情况）。
 
-![Image from PDF page 269](../images/page-0269-image-01.png)
+<p align="center"><img src="../images/page-0269-image-01.png" alt="Image from PDF page 269"></p>
 
-图 9.9：局部分配变量与全局分配变量的区别
+<p align="center">图 9.9：局部分配变量与全局分配变量的区别</p>
 
 图 9.9 清楚地展示了局部分配的变量（lbuf）和全局作用域分配的变量（gbuf）之间的区别。只要 `func1()` 在堆栈上，lbuf 就会保持活动状态。
 
@@ -954,7 +954,7 @@ DMA 控制器也可以用于执行存储器到存储器的传输¹⁷。例如�
 
 <!-- page: 272 -->
 
-![Image from PDF page 272](../images/page-0272-image-01.png)
+<p align="center"><img src="../images/page-0272-image-01.png" alt="Image from PDF page 272"></p>
 
 表 9.16：M2M 传输测试结果
 
@@ -1003,6 +1003,6 @@ GPIOC->ODR = 0x0;
 
 <!-- page: 274 -->
 
-![Image from PDF page 274](../images/page-0274-image-01.png)
+<p align="center"><img src="../images/page-0274-image-01.png" alt="Image from PDF page 274"></p>
 
-图 9.10：如何选择 newlib/newlib-nano 运行时库
+<p align="center">图 9.10：如何选择 newlib/newlib-nano 运行时库</p>

@@ -14,9 +14,9 @@ MCU 部分或降低其时钟速度，有助于优化整个设备的功耗。这�
 
 时钟通常产生占空比为 50% 的方波信号，如图 10.1¹ 所示。
 
-![Image from PDF page 275](../images/page-0275-image-01.png)
+<p align="center"><img src="../images/page-0275-image-01.png" alt="Image from PDF page 275"></p>
 
-图 10.1：占空比为 50% 的典型时钟信号
+<p align="center">图 10.1：占空比为 50% 的典型时钟信号</p>
 
 时钟信号在 VL 和 VH 电压电平之间振荡；对于 STM32 微控制器而言，这两个电平都是 VDD 供电电压的某个分数。时钟最基本的参数是频率，它表示每秒从
 VL 切换到 VH 的次数。频率以赫兹（Hertz）为单位表示。
@@ -39,9 +39,9 @@ Watchdog，IWDT）外设提供时钟。
 内部传播时钟信号。通过使用多个可编程锁相环（Phase-Locked Loops，PLL）和预分频器，可以根据需要增加/降低源频率（见图
 10.2），具体取决于我们要达到的性能、特定外设或总线的最大速度以及整体全局功耗⁷。
 
-![Image from PDF page 276](../images/page-0276-image-01.png)
+<p align="center"><img src="../images/page-0276-image-01.png" alt="Image from PDF page 276"></p>
 
-图 10.2：如何使用 PLL 和预分频器增加/降低源时钟信号频率
+<p align="center">图 10.2：如何使用 PLL 和预分频器增加/降低源时钟信号频率</p>
 
 ### 10.1.1 STM32 时钟树概览
 
@@ -92,9 +92,9 @@ STM32 时钟树进行快速概览，读者可自行深入研究所使用的特�
 
 除非出于性能和电源管理方面的原因，需要处理特定的 PLL 配置。
 
-![Image from PDF page 278](../images/page-0278-image-01.jpeg)
+<p align="center"><img src="../images/page-0278-image-01.jpeg" alt="Image from PDF page 278"></p>
 
-图 10.3：STM32F030R8 MCU 的时钟树
+<p align="center">图 10.3：STM32F030R8 MCU 的时钟树</p>
 
 图 10.3 展示了最简单的 STM32 微控制器之一：STM32F030R8 的时钟树。该图提取自 ST 提供的相关参考手册⁹。对于许多 STM32
 平台的新手来说，这张图完全令人费解且难以解读，尤其是当他们也是嵌入式微控制器的新手时。图中用红色标出了最相关的路径：从 HSI
@@ -175,9 +175,9 @@ PLL 提供输入，使系统以最高速度运行。
 我们在第 4 章中已经接触过 CubeMX 的时钟配置视图。现在是时候看看它是如何工作的了。图 10.4 展示了前文所见的同一款 F0
 微控制器的时钟树。正如你所见，得益于屏幕上可用的空间更大，分配网络看起来不那么繁琐了。
 
-![Image from PDF page 281](../images/page-0281-image-01.jpeg)
+<p align="center"><img src="../images/page-0281-image-01.jpeg" alt="Image from PDF page 281"></p>
 
-图 10.4：STM32F030R8 微控制器的时钟树在 CubeMX 中的表示方式
+<p align="center">图 10.4：STM32F030R8 微控制器的时钟树在 CubeMX 中的表示方式</p>
 
 在这种情况下，时钟树中最关键的路径也用红色和蓝色高亮显示。这应该能简化与图 10.3 的对比。当创建新项目时，默认情况下 CubeMX 选择
 HSI 振荡器作为默认时钟源。如图 10.4 所示，HSI 也被选为系统时钟多路复用器¹⁴（蓝色路径）的默认时钟源。这意味着，对于我们要考虑的这款微控制器，Cortex-M
@@ -195,15 +195,15 @@ HCLK 字段中输入“48”并按下回车键。CubeMX 将自动调整设置，
 振荡器的时钟源（我们稍后将会逐步介绍如何执行此步骤）。一旦外部振荡器被启用，就可以指定其频率（在标有“输入频率”的蓝色框内），并配置主
 PLL 以实现所需的 SYSCLK 速度（参见图 10.5）。否则，外部振荡器的输入频率可以直接用作系统时钟切换器的源时钟。
 
-![Image from PDF page 282](../images/page-0282-image-01.jpeg)
+<p align="center"><img src="../images/page-0282-image-01.jpeg" alt="Image from PDF page 282"></p>
 
-图 10.5：使用 RCC 外设启用 HSE 振荡器后，CubeMX 允许选择该振荡器
+<p align="center">图 10.5：使用 RCC 外设启用 HSE 振荡器后，CubeMX 允许选择该振荡器</p>
 
 我们需要相应地配置 RCC 外设以启用外部时钟源。这可以通过 CubeMX 中的引脚布局视图完成，如图 10.6 所示。
 
-![Image from PDF page 282](../images/page-0282-image-02.png)
+<p align="center"><img src="../images/page-0282-image-02.png" alt="Image from PDF page 282"></p>
 
-图 10.6：RCC 外设提供的配置选项
+<p align="center">图 10.6：RCC 外设提供的配置选项</p>
 
 对于 HSE 和 LSE 振荡器，CubeMX 提供三种配置选项：
 
@@ -221,9 +221,9 @@ PLL 以实现所需的 SYSCLK 速度（参见图 10.5）。否则，外部振荡
 RCC 外设还允许启用 Master Clock Output (MCO)，这是一个可用于为另一个外部设备提供时钟的引脚，从而省去该其他 IC 所需的外部晶振。一旦启用
 MCO，就可以使用时钟配置视图选择其时钟源，如图 10.7 所示。
 
-![Image from PDF page 283](../images/page-0283-image-01.jpeg)
+<p align="center"><img src="../images/page-0283-image-01.jpeg" alt="Image from PDF page 283"></p>
 
-图 10.7：如何为 MCO 引脚选择时钟源
+<p align="center">图 10.7：如何为 MCO 引脚选择时钟源</p>
 
 ### 10.1.3 Nucleo 开发板中的时钟源选项
 
@@ -233,9 +233,9 @@ Nucleo-64 开发板为时钟源提供了多种替代方案。然而，早期的 
 要了解你拥有的是哪个版本的 Nucleo-64，检查开发板版本号很重要。早期版本基于 MB1136 设计。较新的版本基于 MB1367 设计。此信息通常报告在
 PCB 上（在较旧的 Nucleo 上使用背面的标签），如图 10.8 所示。
 
-![Image from PDF page 283](../images/page-0283-image-02.jpeg)
+<p align="center"><img src="../images/page-0283-image-02.jpeg" alt="Image from PDF page 283"></p>
 
-图 10.8：Nucleo-64 PCB 版本号
+<p align="center">图 10.8：Nucleo-64 PCB 版本号</p>
 
 <!-- page: 284 -->
 
@@ -509,9 +509,9 @@ void HAL_RCC_CSSCallback(void) {
 的精度。复位后，出厂校准值会自动加载到 RCC 配置寄存器（RCC_CR）的第二个字节（HSICAL）中（图 10.9 展示了 STM32F401RE²³
 中该寄存器的实现）。
 
-![Image from PDF page 291](../images/page-0291-image-01.jpeg)
+<p align="center"><img src="../images/page-0291-image-01.jpeg" alt="Image from PDF page 291"></p>
 
-图 10.9：STM32F401RE 微控制器中的 RCC_CR 寄存器
+<p align="center">图 10.9：STM32F401RE 微控制器中的 RCC_CR 寄存器</p>
 
 内部 RC 振荡器的频率可以进行微调，以在更宽的温度和电源电压范围内实现更高的精度。修调位（trimming bits）用于此目的。五个修调位
 `RCC_CR->HSITRIM[4:0]` 用于微调。默认的修调值为 16。修调值的增加或减少会导致 HSI 频率相应增加或减少。HSI 振荡器以 HSI 时钟速度的

@@ -14,7 +14,7 @@
 
 在我们研究基于 Cortex-M 的微控制器提供的用于以编程方式选择 MCU 电源模式的功能之前，最好先对数字设备中的功耗来源进行一些考量。
 
-首先，设备本身的复杂性会影响能耗。我们的板卡提供的周边设备和功能越多，所需的功率就越大。此外，某些周边设备本质上能耗较高。例如，与其他电子板卡部件相比，TFT 显示屏消耗大量功率。最后，低功耗设计需要仔细选择 BOM 中的所有组件。例如，在实时时钟 (RTC)
+首先，设备本身的复杂性会影响能耗。我们的板卡提供的外设和功能越多，所需的功率就越大。此外，某些外设本质上能耗较高。例如，与其他电子板卡部件相比，TFT 显示屏消耗大量功率。最后，低功耗设计需要仔细选择 BOM 中的所有组件。例如，在实时时钟 (RTC)
 
 <!-- page: 488 -->
 
@@ -22,11 +22,11 @@
 
 仅关注 MCU，影响功耗的第一个方面是其运行频率：CPU 运行得越快，其消耗就越高。这是一条刻在石头上的定律，所有固件开发人员都必须知道：即使我们使用的 MCU 能够运行到 200MHz，如果我们不需要那么高的速度，那么通过简单地降低时钟频率就可以节省大量能量。这也是 STM32 微控制器拥有复杂时钟分布树的主要原因之一。
 
-这一方面的另一个影响是，主动运行的周边设备越多，MCU 消耗的功率就越大。这意味着设计良好的固件总是立即禁用不再需要的周边设备。例如，如果我们在引导过程中只需要 I²C EEPROM（因为它存储了一些我们在固件生命周期内保留在 RAM 中的配置参数），那么一旦完成，我们就必须禁用 I²C 周边设备²。这就是为什么 STM32 MCU 提供选择性禁用每个周边设备的能力，通过调用 __HAL__RCC_<PPP>_CLK_DISABLE() 来门控其时钟源，其中 <PPP> 是特定的周边设备（例如，__HAL_RCC_DMA1_CLK_DISABLE() 允许门控 DMA1 的时钟，而 __HAL_RCC_DMA1_CLK_ENABLE() 则启用它）。
+这一方面的另一个影响是，主动运行的外设越多，MCU 消耗的功率就越大。这意味着设计良好的固件总是立即禁用不再需要的外设。例如，如果我们在引导过程中只需要 I²C EEPROM（因为它存储了一些我们在固件生命周期内保留在 RAM 中的配置参数），那么一旦完成，我们就必须禁用 I²C 外设²。这就是为什么 STM32 MCU 提供选择性禁用每个外设的能力，通过调用 __HAL__RCC_<PPP>_CLK_DISABLE() 来门控其时钟源，其中 <PPP> 是特定的外设（例如，__HAL_RCC_DMA1_CLK_DISABLE() 允许门控 DMA1 的时钟，而 __HAL_RCC_DMA1_CLK_ENABLE() 则启用它）。
 
 在谈论微控制器时，最好谈论能效，而不仅仅是它们的功耗。设备的功耗仅谈论它使用多少 mA 或 µA，而能效衡量的是它用有限量的能量能做多少“工作”，例如以 DMIPS/mW 或 CoreMark/mW 的形式。因此我们可以发现，对于 STM32L4 MCU，当它在低功耗运行 (LPRUN) 模式下运行时，达到了最佳的能效折衷，如图 19.8 所示。
 
-最后，MCU 及其周边设备本身的设计会影响整体功耗。这就是为什么 STM32L 微控制器被明确设计为在提供特定子系列最佳性能的同时，提供同类最佳的功耗。例如，STM32L4 MCU 中的一些通信周边设备（LPUART 就是其中之一）允许在 MCU 处于 STOP2 模式³时以 DMA 模式交换数据。
+最后，MCU 及其外设本身的设计会影响整体功耗。这就是为什么 STM32L 微控制器被明确设计为在提供特定子系列最佳性能的同时，提供同类最佳的功耗。例如，STM32L4 MCU 中的一些通信外设（LPUART 就是其中之一）允许在 MCU 处于 STOP2 模式³时以 DMA 模式交换数据。
 
 ## 19.2 Cortex-M 微控制器如何处理运行模式和睡眠模式
 
@@ -50,19 +50,19 @@
 
 <!-- page: 490 -->
 
-![Image from PDF page 490](../images/page-0490-image-01.png)
+<p align="center"><img src="../images/page-0490-image-01.png" alt="Image from PDF page 490"></p>
 
-图 19.1：固件如何潜在地管理其活动期间的时钟速度和电源模式
+<p align="center">图 19.1：固件如何潜在地管理其活动期间的时钟速度和电源模式</p>
 
 图 19.1 展示了一种最小化功耗的可能策略。在微控制器启动过程中，微控制器以最大速度运行，以允许快速完成所有初始化活动。当所有外设配置完成后，时钟速度降低，微控制器进入睡眠模式。在此期间，微控制器由中断唤醒，这些中断可以在较低的 CPU 速度下处理。当需要执行 CPU 密集型操作时，时钟速度可以增加到最大值，完成后再次降低。
 
 那么，何时进入睡眠模式？如前所述，由我们决定将微控制器置于可能的睡眠模式之一的正确时间。如果我们知道微控制器正在等待通过中断通知的异步事件，那么进入睡眠模式而不是进行忙等待可能是正确的时机。让我们考虑一下我们在本书中多次看到的经典闪烁 LED 应用。
 
-```text
+```c
 ...
 while(1) {
-HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-HAL_Delay(500);
+    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    HAL_Delay(500);
 }
 ```
 
@@ -80,7 +80,7 @@ HAL_Delay(500);
 
 基于 Cortex-M 的微控制器（MCU）提供两条指令将 MCU 置于睡眠模式：WFI 和 WFE。等待中断（Wait For Interrupt, WFI）指令也被称为无条件睡眠指令。当 CPU 执行该指令时，它会立即停止内核执行。CPU 仅在中断请求（取决于中断优先级和有效的睡眠级别，稍后详述）或调试事件的情况下才会恢复。如果在 MCU 执行 WFI 指令时有中断处于挂起状态，它会进入睡眠模式并立即再次唤醒。
 
-等待事件（Wait For Event, WFE）是另一条允许将 MCU 置于睡眠模式的指令。它与 WFI 的不同之处在于，它在停止内核之前会检查特定事件寄存器⁷的状态：如果该寄存器被置位，WFE 会清除它并且不停止 CPU，继续执行程序执行（这允许我们在需要时处理挂起的事件）。否则，它会停止 MCU，直到该事件寄存器再次被置位。
+等待事件（Wait For Event, WFE）是另一条允许将 MCU 置于睡眠模式的指令。它与 WFI 的不同之处在于，它在停止内核之前会检查特定事件寄存器⁷的状态：如果该寄存器被置位，WFE 会清除它并且不停止 CPU，继续执行程序（这允许我们在需要时处理挂起的事件）。否则，它会停止 MCU，直到该事件寄存器再次被置位。
 
 但事件和中断之间的确切区别是什么？在 STM32 世界（以及更广泛的 Cortex-M 世界）中，事件是一个令人困惑的来源。与我们在第 7 章中学会处理的中断相比，它们看起来像是某种无形的东西。在我们澄清“事件”一词的含义之前，我们需要更好地解释 EXTI 控制器在 STM32 MCU 中的作用。扩展中断和事件控制器（Extended Interrupts and Events Controller, EXTI）是 MCU 内部的一个硬件组件，它管理外部和内部异步中断/事件，并向 CPU/NVIC 控制器生成事件请求，向电源控制器生成唤醒请求（参见图 19.2）。EXTI 允许管理多条事件线，这些线可以将 MCU 从某些睡眠模式中唤醒（并非所有事件都能唤醒 MCU）。这些线是可配置的或直接的，因此在 MCU 内部是硬连线的：
 
@@ -91,9 +91,9 @@ HAL_Delay(500);
 
 <!-- page: 492 -->
 
-![Image from PDF page 492](../images/page-0492-image-01.jpeg)
+<p align="center"><img src="../images/page-0492-image-01.jpeg" alt="Image from PDF page 492"></p>
 
-图 19.2：如何使用事件唤醒内核
+<p align="center">图 19.2：如何使用事件唤醒内核</p>
 
 关于 EXTI 和 NVIC 控制器，另一个需要澄清的重要方面是，每条线都可以独立地屏蔽中断或事件生成。例如，在第 6 章中我们看到，GPIO 可以配置为工作在 GPIO_MODE_EVT_* 模式下，这与 GPIO_MODE_IT_* 模式不同：在前一种情况下，当 I/O 被触发时，它不会生成 IRQ 请求，而是会设置事件标志。如果 MCU 使用 WFE 指令进入了低功耗模式，这将导致 MCU 唤醒。
 
@@ -105,7 +105,7 @@ HAL_Delay(500);
 - 执行 SEV（Send Event）指令；
 - 调试事件（例如，停止请求）。
 
-在第 7 章中我们看到，在 Cortex-M3/4/7/33 内核中，我们可以暂时屏蔽那些优先级低于 BASEPRI 寄存器中设定值的中断的执行。然而，如果这些中断触发，它们仍然处于使能状态并被标记为挂起。我们可以通过设置 SCR->SEVONPEND 位来配置 MCU，以便在中断挂起时设置事件寄存器。顾名思义，该寄存器将在“中断挂起时设置事件寄存器”。这意味着，如果处理器被 WFE 指令置于睡眠模式，CPU 会立即唤醒，我们可以最终处理挂起的中断。相反，WFI 指令永远不会唤醒内核。Cube HAL 提供了两个方便的函数，HAL_PWR_EnableSEVOnPend() 和 HAL_PWR_DisableSEVOnPend()，以执行此设置。
+在第 7 章中我们看到，在 Cortex-M3/4/7/33 内核中，我们可以暂时屏蔽那些优先级低于 BASEPRI 寄存器中设定值的中断的执行。然而，如果这些中断触发，它们仍然处于使能状态并被标记为挂起。我们可以通过设置 SCR->SEVONPEND 位来配置 MCU，以便在中断挂起时设置事件寄存器。顾名思义，该寄存器将在“中断挂起时设置事件寄存器”。这意味着，如果处理器被 WFE 指令置于睡眠模式，CPU 会立即唤醒，随后可以处理挂起的中断。相反，WFI 指令永远不会唤醒内核。Cube HAL 提供了两个方便的函数，HAL_PWR_EnableSEVOnPend() 和 HAL_PWR_DisableSEVOnPend()，以执行此设置。
 
 <!-- page: 493 -->
 
@@ -124,25 +124,25 @@ HAL_Delay(500);
 - WFE 可以被外部事件唤醒；
 - 当设置了 PRIMASK 时，WFI 可以被使能的中断唤醒。
 
-#### 19.2.1.1 退出时休眠 (Sleep-On-Exit)
+#### 19.2.1.1 退出时睡眠（Sleep-On-Exit）
 
-退出时休眠 (Sleep-On-Exit) 功能对于中断驱动的应用非常有用，在这些应用中，除了初始化阶段外，所有操作都在中断处理程序中执行。这是一个可编程功能，可以通过设置 SCB->SCR 寄存器中的位来启用或禁用。当启用时，Cortex-M 内核在退出异常/中断处理程序时会自动进入休眠模式（其行为与 WFI 指令相同）。应在初始化阶段结束时启用退出时休眠 (Sleep-On-Exit) 功能。否则，如果在初始化阶段期间发生中断事件，而此时退出时休眠 (Sleep-On-Exit) 功能已启用，即使初始化阶段尚未完成，处理器也会进入休眠状态。
+退出时睡眠（Sleep-On-Exit）功能对于中断驱动的应用非常有用，在这些应用中，除了初始化阶段外，所有操作都在中断处理程序中执行。这是一个可编程功能，可以通过设置 SCB->SCR 寄存器中的位来启用或禁用。当启用时，Cortex-M 内核在退出异常/中断处理程序时会自动进入睡眠模式（其行为与 WFI 指令相同）。应在初始化阶段结束时启用退出时睡眠（Sleep-On-Exit）功能。否则，如果在初始化阶段期间发生中断事件，而此时退出时睡眠（Sleep-On-Exit）功能已启用，即使初始化阶段尚未完成，处理器也会进入睡眠状态。
 
 CubeHAL 提供了两个便捷的例程来启用/禁用此模式：HAL_PWR_EnableSleepOnExit() 和 HAL_PWR_DisableSleepOnExit()。
 
-### 19.2.2 基于 Cortex-M 的微控制器中的休眠模式
+### 19.2.2 基于 Cortex-M 的微控制器中的睡眠模式
 
-到目前为止，我们广泛地讨论了休眠模式。这主要是因为 ARM 定义的电源管理方案被芯片供应商进一步专门化，例如 ST 在其产品中就是这样做的。基于 Cortex-M 的微控制器在架构上支持两种休眠模式：普通休眠和深度休眠。正如我们将在本章后面发现的那样，STM32F 微控制器将它们称为休眠 (sleep) 和停止 (stop) 模式
+到目前为止，我们广泛地讨论了睡眠模式。这主要是因为 ARM 定义的电源管理方案被芯片供应商进一步专门化，例如 ST 在其产品中就是这样做的。基于 Cortex-M 的微控制器在架构上支持两种睡眠模式：普通睡眠和深度睡眠。正如我们将在本章后面发现的那样，STM32F 微控制器将它们称为睡眠（sleep）和停止（stop）模式
 
 ⁸基于优先级禁用中断仅适用于基于 Cortex-M3/4/7 的微控制器。
 
 <!-- page: 494 -->
 
-并添加了一种更深的模式，称为待机 (standby) 模式。STM32L 系列进一步将这些两个“主要”操作模式细分为多个子模式。
+并添加了一种更深的模式，称为待机（standby）模式。STM32L 系列进一步将这两种“主要”操作模式细分为多个子模式。
 
-普通休眠和深度休眠模式都是通过之前看到的 WFI 和 WFE 指令达到的。唯一的区别是，深度休眠模式是通过将 PWR->SCR 寄存器中的 SLEEPDEEP 位设置为 1 来实现的。然而，我们不需要处理这些细节，因为 CubeHAL 被设计为抽象这些细节。
+普通睡眠和深度睡眠模式都是通过之前看到的 WFI 和 WFE 指令达到的。唯一的区别是，深度睡眠模式是通过将 PWR->SCR 寄存器中的 SLEEPDEEP 位设置为 1 来实现的。然而，我们不需要处理这些细节，因为 CubeHAL 被设计为抽象这些细节。
 
-通常，STM32 微控制器被设计为在休眠模式下仅关闭 CPU 时钟，而对其他时钟或模拟时钟源没有影响（这意味着所有启用的外设保持活动状态）。而在停止模式下，属于 1.8V（对于较新的 STM32 微控制器为 1.2V）域时钟的所有外设都会被关闭，而 VDD 域保持开启⁹，除了 HSI 和 HSE 振荡器会被关闭。在待机模式下，1.8V 域和 VDD 域都会被关闭。然而，在下一段中我们将深入探讨这些主题。
+通常，STM32 微控制器被设计为在睡眠模式下仅关闭 CPU 时钟，而对其他时钟或模拟时钟源没有影响（这意味着所有启用的外设保持活动状态）。而在停止模式下，属于 1.8V（对于较新的 STM32 微控制器为 1.2V）域时钟的所有外设都会被关闭，而 VDD 域保持开启⁹，除了 HSI 和 HSE 振荡器会被关闭。在待机模式下，1.8V 域和 VDD 域都会被关闭。然而，在下一段中我们将深入探讨这些主题。
 
 ## 19.3 STM32F 微控制器中的电源管理
 
@@ -152,17 +152,17 @@ CubeHAL 提供了两个便捷的例程来启用/禁用此模式：HAL_PWR_Enable
 
 ### 19.3.1 电源
 
-图 19.3 显示了 STM32F 微控制器的电源¹⁰。如前所述，即使我们习惯于仅通过一个电源为微控制器供电（更多相关内容见第 27 章），微控制器内部有一个电源分配网络，定义了多个电压域，用于为具有相同供电特性的外设供电。例如，VDDA 域包括那些需要独立（过滤更好）电源的模拟外设，通过 VDDA 引脚供电。
+图 19.3 显示了 STM32F 微控制器的电源¹⁰。如前所述，即使我们习惯于仅通过一个电源为微控制器供电（更多相关内容见第 27 章），微控制器内部有一个电源分配网络，定义了多个电压域，用于为具有相同供电特性的外设供电。例如，VDDA 域包括需要由独立（且滤波效果更好）的电源通过 VDDA 引脚供电的模拟外设。
 
 ⁹正如我们将很快发现的，STM32 微控制器可以由 2.0V 到 3.6V 的可变电压源供电（其中一些允许低至 1.62V 供电）。该电压源也称为 VDD 域，微控制器内部所有由该电源供电的组件都被认为是 VDD 域的一部分。然而，微控制器内部内核和其他一些外设由专用的 1.8V（在某些 STM32L 微控制器中甚至为 1.0V）内部电压调节器供电。这定义了 1.8V 域或 VCORE 域。低压内部调节器可以独立关闭。稍后会有更多介绍。 ¹⁰重要的是要指出，图 19.3 中的图表只是一个示意图。某些 STM32F 微控制器，特别是那些提供 TFT-LCD 控制器或其他通信接口（如以太网）的微控制器，引入了其他电源域。同样，引脚数较少的 STM32 微控制器（特别是引脚数少于 32 个的那些）具有简化的电源分配网络。然而，这里说明的概念仍然有效。
 
 <!-- page: 495 -->
 
-![Image from PDF page 495](../images/page-0495-image-01.jpeg)
+<p align="center"><img src="../images/page-0495-image-01.jpeg" alt="Image from PDF page 495"></p>
 
-图 19.3：STM32F 微控制器中的电源
+<p align="center">图 19.3：STM32F 微控制器中的电源</p>
 
-VDD 和 VDD18 域是最相关的域。VDD 域由外部电源供电，而 VDD18 域由微控制器内部的电压调节器供电。该调节器可以配置为工作在低功耗模式，我们将在下文看到。为了在 VDD 关闭时保持备份寄存器¹¹的内容并为 RTC 功能供电，VBAT 引脚可以连接到由电池或其他源提供的可选待机电压。VBAT 引脚为 RTC 单元、LSE 振荡器以及用于从深度休眠模式唤醒微控制器的一个或两个引脚供电，允许 RTC 在主电源关闭时继续运行。因此，VBAT 电源被称为为 RTC 域供电。切换到 VBAT 供电由嵌入在复位块中的掉电复位 (Power Down Reset, PDR) 控制。
+VDD 和 VDD18 域是最相关的域。VDD 域由外部电源供电，而 VDD18 域由微控制器内部的电压调节器供电。该调节器可以配置为工作在低功耗模式，我们将在下文看到。为了在 VDD 关闭时保持备份寄存器¹¹的内容并为 RTC 功能供电，VBAT 引脚可以连接到由电池或其他源提供的可选待机电压。VBAT 引脚为 RTC 单元、LSE 振荡器以及用于从深度睡眠模式唤醒微控制器的一个或两个引脚供电，允许 RTC 在主电源关闭时继续运行。因此，VBAT 电源是 RTC 域的供电电源。切换到 VBAT 供电由嵌入在复位块中的掉电复位（Power Down Reset，PDR）控制。
 
 ### 19.3.2 电源模式
 
@@ -172,13 +172,13 @@ VDD 和 VDD18 域是最相关的域。VDD 域由外部电源供电，而 VDD18 �
 
 <!-- page: 496 -->
 
-![Image from PDF page 496](../images/page-0496-image-01.png)
+<p align="center"><img src="../images/page-0496-image-01.png" alt="Image from PDF page 496"></p>
 
-表 19.1：STM32F 系列微控制器支持的三种电源模式
+<p align="center">表 19.1：STM32F 系列微控制器支持的三种电源模式</p>
 
 #### 19.3.2.1 运行模式
 
-默认情况下，在上电或系统复位后，STM32F 系列微控制器被置于运行模式。这是一种完全活跃的模式，即使执行轻微任务也会消耗大量功率。运行模式和睡眠模式的功耗都取决于工作频率¹²。
+默认情况下，在上电或系统复位后，STM32F 系列微控制器被置于运行模式。这是一种完全活跃的模式，即使只执行轻量级任务也会消耗大量功率。运行模式和睡眠模式的功耗都取决于工作频率¹²。
 
 图 19.4¹³ 展示了一些最新 STM32F4 系列微控制器的功耗水平。
 
@@ -191,17 +191,17 @@ VDD 和 VDD18 域是最相关的域。VDD 域由外部电源供电，而 VDD18 �
 
 <!-- page:497 -->
 
-![Image from PDF page 497](../images/page-0497-image-01.jpeg)
+<p align="center"><img src="../images/page-0497-image-01.jpeg" alt="Image from PDF page 497"></p>
 
-图 19.4：一些 STM32F4 系列微控制器的功耗
+<p align="center">图 19.4：一些 STM32F4 系列微控制器的功耗</p>
 
 ##### 19.3.2.1.1 STM32F4/F7 系列微控制器中的动态电压缩放
 
-直流电路使用的功率由电路的电流和电压决定。这意味着我们可以通过降低电压来减少电路所需的功率。STM32F4/F7 系列提供了一项名为动态电压缩放（Dynamic Voltage Scaling, DVS）的智能供电技术，这是 STM32L 系列特有的。DVS 背后的理念是，许多嵌入式系统并不总是需要系统的完整处理能力，因为并非所有子系统始终处于活跃状态。在这种情况下，系统可以保持活跃模式，而处理器不必以最大工作频率运行。当较低频率足够时，可以降低提供给处理器的电压。通过这种电源管理，我们可以在监控处理器输入电压以响应系统性能需求的同时，减少电池消耗的功率。
+直流电路使用的功率由电路的电流和电压决定。这意味着我们可以通过降低电压来减少电路所需的功率。STM32F4/F7 系列提供了一项名为动态电压缩放（Dynamic Voltage Scaling，DVS）的智能供电技术，这项技术原本是 STM32L 系列的特色。DVS 背后的理念是，许多嵌入式系统并不总是需要系统的完整处理能力，因为并非所有子系统始终处于活跃状态。在这种情况下，系统可以保持运行状态，而处理器不必以最大工作频率运行。当较低频率足够时，可以降低提供给处理器的电压。通过这种电源管理，我们可以在监控处理器输入电压以响应系统性能需求的同时，降低电池功耗。
 
 这包括在根据处理需求降低时钟频率时，缩放 STM32F4 系列稳压器输出电压，该电压为 1.2V 域（内核、存储器和数字外设）供电。STM32F4/F7 系列提供三种电压缩放级别（scale 1、scale 2 和 scale 3）。给定电压缩放级别下可实现的最大内核频率由具体的 STM32 微控制器决定。例如，STM32F401 仅提供两种电压缩放级别，scale 2 和 scale 3，分别允许内核运行至 84MHz 和 60MHz。为了控制电压缩放，CubeHAL 提供了以下函数：
 
-```text
+```c
 HAL_StatusTypeDef HAL_PWREx_ControlVoltageScaling(uint32_t VoltageScaling);
 ```
 
@@ -226,13 +226,12 @@ STM32F4 系列中的某些微控制器以及所有 STM32F7 系列微控制器提
 
 通过执行 WFI 或 WFE 指令进入睡眠模式。在睡眠模式下，所有 I/O 引脚保持与运行模式相同的状态。然而，我们无需关心汇编指令，因为 CubeHAL 提供了以下函数：
 
-```text
+```c
 void HAL_PWR_EnterSLEEPMode(uint32_t Regulator, uint8_t SLEEPEntry);
 ```
 
 第一个参数 Regulator 对于所有 STM32F 系列在睡眠模式下均无意义，保留该参数是为了与 STM32L 系列保持兼容。第二个参数 SLEEPEntry 可以取值为 PWR_SLEEPENTRY_WFI 或 PWR_SLEEPENTRY_WFE：顾名思义，前者执行 WFI 指令，后者执行 WFE 指令。
 
-![Image from PDF page 498](../images/page-0498-image-01.png)
 
 如果您查看 HAL_PWR_EnterSLEEPMode() 函数，会发现如果传入参数 PWR_SLEEPENTRY_WFE，它会连续执行两条 WFE 指令。这导致 HAL_PWR_EnterSLEEPMode() 以与传入参数 PWR_SLEEPENTRY_WFI 相同的方式进入睡眠模式（连续调用两次 WFE 会导致：如果事件寄存器已置位，则第一条 WFE 指令将其清除，第二条指令使 MCU 进入睡眠模式）。我不知道 ST 为何采用这种方法。如果您希望完全控制 MCU 进入低功耗模式的方式，则需要根据您的需要重新调整该函数的内容。显然，MCU 将遵循 WFE 指令的退出条件从睡眠模式退出。
 
@@ -251,7 +250,7 @@ void HAL_PWR_EnterSLEEPMode(uint32_t Regulator, uint8_t SLEEPEntry);
 
 停止模式基于 Cortex-M 深度睡眠模式并结合外设时钟门控。在停止模式下，1.8V 域中的所有时钟停止，PLL、HSI 和 HSE 振荡器被禁用。SRAM 和寄存器内容得以保留。在停止模式下，所有 I/O 引脚保持与运行模式相同的状态。电压调节器可配置为正常模式或低功耗模式。为使 MCU 进入停止模式，HAL 提供了以下函数：
 
-```text
+```c
 void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry);
 ```
 
@@ -267,23 +266,23 @@ void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry);
 
 待机模式可实现最低的功耗。它基于 Cortex-M 深度睡眠模式，且电压调节器被禁用。因此，1.8-1.2V 域断电。PLL 多路复用器、HSI 和 HSE 振荡器也关闭。SRAM 和寄存器内容丢失，待机电路中的寄存器除外。为使 MCU 进入待机模式，HAL 提供了以下函数：
 
-```text
+```c
 void HAL_PWR_EnterSTANDBYMode(void);
 ```
 
 当发生外部复位 (NRST 引脚)、IWDG 复位、任一已使能的 WKUPx 引脚上的上升沿或 RTC 事件时，微控制器退出待机模式。从待机模式唤醒后，除电源控制/状态寄存器 (PWR->CSR) 外，所有寄存器均被复位。从待机模式唤醒后，程序执行以与复位后相同的方式重新开始（启动引脚采样、选项字节加载、获取复位向量等）。使用宏：
 
-```text
+```c
 __HAL_PWR_GET_FLAG(PWR_FLAG_SB);
 ```
 
-我们可以检查 MCU 是否因退出待机模式而正在复位。由于在进入停止模式之前 HSE 和 PLL 均被禁用，因此当退出此低功耗模式时，MCU 源时钟被设置为 HSI。这意味着我们的代码必须根据所需的 SYSCLK 速度重新配置时钟树。
+我们可以检查 MCU 是否因退出待机模式而正在复位。
 
-仔细阅读
 
-![Image from PDF page 500](../images/page-0500-image-01.png)
 
-某些 STM32 MCU 存在硬件缺陷，导致无法进入或退出待机模式。在进入此模式之前必须满足特定条件。请查阅您 MCU 的勘误表以获取更多信息（如果适用）。
+> **仔细阅读**
+>
+> 某些 STM32 MCU 存在硬件缺陷，导致无法进入或退出待机模式。在进入此模式之前必须满足特定条件。请查阅您 MCU 的勘误表以获取更多信息（如果适用）。
 
 #### 19.3.2.5 低功耗模式示例
 
@@ -293,317 +292,146 @@ __HAL_PWR_GET_FLAG(PWR_FLAG_SB);
 
 <!-- page: 501 -->
 
-```text
-Filename: Core/Src/main-ex1.c
-14
-int main(void) {
-15
-char msg[30];
-```
+**文件名：** `Core/Src/main-ex1.c`
 
-16
-
-```text
-17
-HAL_Init();
-18
-Nucleo_BSP_Init();
-```
-
-19
-
-```text
-20
-/* Before we can access to every register of the PWR peripheral we must enable it */
-21
-__HAL_RCC_PWR_CLK_ENABLE();
-```
-
-22
-
-```text
-23
-while (1) {
-24
-if(__HAL_PWR_GET_FLAG(PWR_FLAG_SB)) {
-25
-/* If standby flag set in PWR->CSR, then the reset is generated from
-26
-* the exit of the standby mode */
-27
-sprintf(msg, "RESET after STANDBY mode\r\n");
-28
-HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-29
-/* We have to explicitly clear the flag */
-30
-__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU|PWR_FLAG_SB);
-31
-}
-```
-
-32
-
-```text
-33
-sprintf(msg, "MCU in run mode\r\n");
-34
-HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-35
-while(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_SET) {
-36
-HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-37
-HAL_Delay(100);
-38
-}
-```
-
-39
-
-```text
-40
-HAL_Delay(200);
-```
-
-41
-
-```text
-42
-sprintf(msg, "Entering in SLEEP mode\r\n");
-43
-HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-```
-
-44
-
-```text
-45
-SleepMode();
-```
-
-46
-
-```text
-47
-sprintf(msg, "Exiting from SLEEP mode\r\n");
-48
-HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-```
-
-49
-
-```text
-50
-while(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_SET);
-51
-HAL_Delay(200);
-```
-
-52
-
-```text
-53
-sprintf(msg, "Entering in STOP mode\r\n");
-54
-HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-```
-
-55
-
-```text
-56
-StopMode();
-```
-
-57
-
-```text
-58
-sprintf(msg, "Exiting from STOP mode\r\n");
-59
-HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-```
-
-<!-- page: 502 -->
-
-60
-
-```text
-61
-while(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_SET);
-62
-HAL_Delay(200);
-```
-
-63
-
-```text
-64
-sprintf(msg, "Entering in STANDBY mode\r\n");
-65
-HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-```
-
-66
-
-```text
-67
-StandbyMode();
-```
-
-68
-
-```text
-69
-while(1); //Never arrives here, since MCU is reset when exiting from STANDBY
-70
-}
-71
-}
-```
-
-72
-
-73
-
-```text
-74
-void SleepMode(void)
-75
-{
-76
-GPIO_InitTypeDef GPIO_InitStruct;
-```
-
-77
-
-```text
-78
-/* Disable all GPIOs to reduce power */
-79
-MX_GPIO_Deinit();
-```
-
-80
-
-```text
-81
-/* Configure User push-button as external interrupt generator */
-82
-__HAL_RCC_GPIOC_CLK_ENABLE();
-83
-GPIO_InitStruct.Pin = B1_Pin;
-84
-GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-85
-GPIO_InitStruct.Pull = GPIO_NOPULL;
-86
-HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
-```
-
-87
-
-```text
-88
-HAL_UART_DeInit(&huart2);
-```
-
-89
-
-```text
-90
-/* Suspend Tick increment to prevent wakeup by Systick interrupt.
-91
-Otherwise the Systick interrupt will wake up the device within 1ms (HAL time base) */
-92
-HAL_SuspendTick();
-```
-
-93
-
-```text
-94
-__HAL_RCC_PWR_CLK_ENABLE();
-95
-/* Request to enter SLEEP mode */
-96
-HAL_PWR_EnterSLEEPMode(0, PWR_SLEEPENTRY_WFI);
-```
-
-97
-
-```text
-98
-/* Resume Tick interrupt if disabled prior to sleep mode entry*/
-99
-HAL_ResumeTick();
-100
-101
-/* Reinitialize GPIOs */
-102
-MX_GPIO_Init();
-103
-104
-/* Reinitialize UART2 */
-105
-MX_USART2_UART_Init();
-106
-}
+```c
+14  int main(void) {
+15    char msg[30];
+16  
+17    HAL_Init();
+18    Nucleo_BSP_Init();
+19  
+20    /* Before we can access to every register of the PWR peripheral we must enable it */
+21    __HAL_RCC_PWR_CLK_ENABLE();
+22  
+23    while (1) {
+24      if(__HAL_PWR_GET_FLAG(PWR_FLAG_SB)) {
+25        /* If standby flag set in PWR->CSR, then the reset is generated from
+26        * the exit of the standby mode */
+27        sprintf(msg, "RESET after STANDBY mode\r\n");
+28        HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+29        /* We have to explicitly clear the flag */
+30        __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU|PWR_FLAG_SB);
+31      }
+32  
+33      sprintf(msg, "MCU in run mode\r\n");
+34      HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+35      while(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_SET) {
+36        HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+37        HAL_Delay(100);
+38      }
+39  
+40      HAL_Delay(200);
+41  
+42      sprintf(msg, "Entering in SLEEP mode\r\n");
+43      HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+44  
+45      SleepMode();
+46  
+47      sprintf(msg, "Exiting from SLEEP mode\r\n");
+48      HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+49  
+50      while(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_SET);
+51      HAL_Delay(200);
+52  
+53      sprintf(msg, "Entering in STOP mode\r\n");
+54      HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+55  
+56      StopMode();
+57  
+58      sprintf(msg, "Exiting from STOP mode\r\n");
+59      HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+60  
+61      while(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_SET);
+62      HAL_Delay(200);
+63  
+64      sprintf(msg, "Entering in STANDBY mode\r\n");
+65      HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+66  
+67      StandbyMode();
+68  
+69      while(1); //Never arrives here, since MCU is reset when exiting from STANDBY
+70    }
+71  }
+72  
+73  
+74  void SleepMode(void)
+75  {
+76    GPIO_InitTypeDef GPIO_InitStruct;
+77  
+78    /* Disable all GPIOs to reduce power */
+79    MX_GPIO_Deinit();
+80  
+81    /* Configure User push-button as external interrupt generator */
+82    __HAL_RCC_GPIOC_CLK_ENABLE();
+83    GPIO_InitStruct.Pin = B1_Pin;
+84    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+85    GPIO_InitStruct.Pull = GPIO_NOPULL;
+86    HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+87  
+88    HAL_UART_DeInit(&huart2);
+89  
+90    /* Suspend Tick increment to prevent wakeup by Systick interrupt.
+91     Otherwise the Systick interrupt will wake up the device within 1ms (HAL time base) */
+92    HAL_SuspendTick();
+93  
+94    __HAL_RCC_PWR_CLK_ENABLE();
+95    /* Request to enter SLEEP mode */
+96    HAL_PWR_EnterSLEEPMode(0, PWR_SLEEPENTRY_WFI);
+97  
+98    /* Resume Tick interrupt if disabled prior to sleep mode entry*/
+99    HAL_ResumeTick();
+100 
+101   /* Reinitialize GPIOs */
+102   MX_GPIO_Init();
+103 
+104   /* Reinitialize UART2 */
+105   MX_USART2_UART_Init();
+106 }
 ```
 
 <!-- page: 503 -->
 
 第 21 行的宏 __HAL_RCC_PWR_CLK_ENABLE() 启用了 PWR 外设：在执行任何与电源管理相关的操作之前，我们需要启用 PWR 外设，即使我们只是检查 PWR->CSR 寄存器中是否设置了待机标志。这是许多初学者在电源管理中遇到麻烦的一个来源。第 [24:31] 行检查是否设置了待机标志：如果是，这意味着 MCU 在退出待机模式后发生了复位。第 [33:38] 行代表运行模式：LD2 LED 会闪烁，直到我们按下连接到 PC13 引脚的 Nucleo USER 按钮。main() 中剩余的代码只是在每次按下 USER 按钮时循环遍历三种低功耗模式。第 [74:106] 行定义了 SleepMode() 函数，用于将 MCU 置于睡眠模式。所有 GPIO 都被配置为模拟模式，以减少未使用 IO 上的电流消耗（特别是那些可能成为漏电源的引脚）。相应的外设时钟被关闭，除了 GPIOC 外设：PC13 GPIO 用于从低功耗模式恢复。同样的情况也适用于 UART2 接口和 SysTick 定时器，后者被停止以防止 MCU 在 1ms 后退出低功耗模式。第 96 行对 HAL_PWR_EnterSLEEPMode() 函数的调用将 MCU 置于睡眠模式，直到按下 USER 按钮时唤醒（因为我们将相应的 IRQ 配置为导致 WFI 指令退出低功耗模式，所以 MCU 会唤醒）。此处未显示的 StopMode() 函数与 SleepMode() 几乎相同，除了它调用 HAL_PWR_EnterSTOPMode() 函数将 MCU 置于停止模式，并且再次调用 Nucleo_BSP_Init() 函数，该函数进而调用 SystemClock_Config() 函数以恢复时钟到原始设置，从而允许 USART2 正常工作。
 
-```text
-Filename: Core/Src/main-ex1.c
-149
-void StandbyMode(void) {
-150
-MX_GPIO_Deinit();
-151
-152
-/* This procedure come from the STM32F030 Errata sheet*/
-153
-__HAL_RCC_PWR_CLK_ENABLE();
-154
-155
-HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
-156
-157
-/* Clear PWR wake up Flag */
-158
-__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
-159
-160
-/* Enable WKUP pin */
-161
-HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
-162
-163
-/* Enter STANDBY mode */
-164
-HAL_PWR_EnterSTANDBYMode();
-165
-}
+**文件名：** `Core/Src/main-ex1.c`
+
+```c
+149 void StandbyMode(void) {
+150   MX_GPIO_Deinit();
+151 
+152   /* This procedure come from the STM32F030 Errata sheet*/
+153   __HAL_RCC_PWR_CLK_ENABLE();
+154 
+155   HAL_PWR_DisableWakeUpPin(PWR_WAKEUP_PIN1);
+156 
+157   /* Clear PWR wake up Flag */
+158   __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+159 
+160   /* Enable WKUP pin */
+161   HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
+162 
+163   /* Enter STANDBY mode */
+164   HAL_PWR_EnterSTANDBYMode();
+165 }
 ```
 
 最后，第 [144:160] 行定义了 StandbyMode() 函数。在这里，我们遵循 STM32F072 勘误表中描述的过程，因为该系列受一个硬件缺陷影响，导致 CPU 无法进入待机模式：我们必须首先禁用 PWR_WAKEUP_PIN1 引脚，然后清除 PWR->CSR 外设中的唤醒标志，并重新启用唤醒引脚，在 STM32F072 MCU 中，该引脚与 PA0 引脚重合。
 
 <!-- page: 504 -->
 
-![Image from PDF page 504](../images/page-0504-image-01.png)
 
-STM32 MCU 通常有两个唤醒引脚，分别命名为 PWR_WAKEUP_PIN1 和 PWR_WAKEUP_PIN2。对于许多采用 LQFP64 封装的 STM32 MCU，第二个唤醒引脚与 PC13 重合，而在所有 Nucleo 开发板（除了连接到 PB13 引脚的 Nucleo-F302）中，PC13 都连接到 USER 按钮。然而，在我们的示例中不能使用 PWR_WAKEUP_PIN2，因为该引脚在 PCB 上被电阻拉高。当我们将唤醒引脚与待机模式结合使用时，我们并没有使用相应的 GPIO 外设（该外设允许我们配置引脚输入模式），因为在进入待机模式之前它已经断电：唤醒引脚由 PWR 外设直接处理，如果这两个引脚中的任何一个变高，PWR 外设就会复位 MCU。因此，在示例中我们使用 PWR_WAKEUP_PIN1 引脚，在 STM32F072 MCU 中，该引脚对应于 PA0 引脚。
+> **注意**
+>
+> STM32 MCU 通常有两个唤醒引脚，分别命名为 PWR_WAKEUP_PIN1 和 PWR_WAKEUP_PIN2。对于许多采用 LQFP64 封装的 STM32 MCU，第二个唤醒引脚与 PC13 重合，而在所有 Nucleo 开发板（除了连接到 PB13 引脚的 Nucleo-F302）中，PC13 都连接到 USER 按钮。然而，在我们的示例中不能使用 PWR_WAKEUP_PIN2，因为该引脚在 PCB 上被电阻拉高。当我们将唤醒引脚与待机模式结合使用时，我们并没有使用相应的 GPIO 外设（该外设允许我们配置引脚输入模式），因为在进入待机模式之前它已经断电：唤醒引脚由 PWR 外设直接处理，如果这两个引脚中的任何一个变高，PWR 外设就会复位 MCU。因此，在示例中我们使用 PWR_WAKEUP_PIN1 引脚，在 STM32F072 MCU 中，该引脚对应于 PA0 引脚。
 
-![Image from PDF page 504](../images/page-0504-image-02.jpeg)
+<p align="center"><img src="../images/page-0504-image-02.jpeg" alt="Image from PDF page 504"></p>
 
-图 19.5：如何在 Nucleo 开发板上测量 MCU 的功耗
+<p align="center">图 19.5：如何在 Nucleo 开发板上测量 MCU 的功耗</p>
 
 Nucleo 开发板允许使用 IDD 引脚排针测量 MCU 的电流消耗。在开始测量之前，您应该按照图 19.5 所示建立与开发板的连接，方法是移除 IDD 跳线帽并连接电流表电缆。确保电流表设置为 mA 量程。这样，您就可以看到每种电源模式下的功耗。
 
-![Image from PDF page 504](../images/page-0504-image-03.png)
+<p align="center"><img src="../images/page-0504-image-03.png" alt="Image from PDF page 504"></p>
 
 ### 19.3.3 针对 STM32F1 微控制器的重要警告
 
@@ -611,101 +439,54 @@ Nucleo 开发板允许使用 IDD 引脚排针测量 MCU 的电流消耗。在开
 
 <!-- page: 505 -->
 
-## MCU 使用 WFI 指令进入该低功耗模式后，从该模式退出有关。在这种特定场景下，MCU 能够正确进入停止模式，但当其中断唤醒时，会立即产生一个 Hard Fault 异常。我得出结论，ST 的开发人员在进入 Cortex-M3 处理器的低功耗模式时，并未遵循 ARM 的建议，正如此处所述¹⁶。
+MCU 使用 WFI 指令进入该低功耗模式后，从该模式退出有关。在这种特定场景下，MCU 能够正确进入停止模式，但当其中断唤醒时，会立即产生一个 Hard Fault 异常。我得出结论，ST 的开发人员在进入 Cortex-M3 处理器的低功耗模式时，并未遵循 ARM 的建议，正如此处所述¹⁶。
 
-## 以这种方式修改 HAL 例程解决了该问题：
+以这种方式修改 HAL 例程解决了该问题：
 
-```text
-1
-void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry) {
-2
-/* Check the parameters */
-3
-assert_param(IS_PWR_REGULATOR(Regulator));
-4
-assert_param(IS_PWR_STOP_ENTRY(STOPEntry));
+```c
+1   void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry) {
+2     /* Check the parameters */
+3     assert_param(IS_PWR_REGULATOR(Regulator));
+4     assert_param(IS_PWR_STOP_ENTRY(STOPEntry));
+5   
+6     /* Clear PDDS bit in PWR register to specify entering in STOP mode when CPU enter in Deepsle\
+7   ep */
+8     CLEAR_BIT(PWR->CR, PWR_CR_PDDS);
+9   
+10    /* Select the voltage regulator mode by setting LPDS bit in PWR register according to Regula\
+11  tor parameter value */
+12    MODIFY_REG(PWR->CR, PWR_CR_LPDS, Regulator);
+13  
+14    /* Set SLEEPDEEP bit of Cortex System Control Register */
+15    SET_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
+16  
+17    /* Select Stop mode entry --------------------------------------------------*/
+18    if(STOPEntry == PWR_STOPENTRY_WFI)
+19    {
+20      /* Request Wait For Interrupt */
+21      __DSB(); //Added by me
+22      __WFI();
+23      __ISB(); //Added by me
+24    }
+25    else
+26    {
+27      /* Request Wait For Event */
+28      __SEV();
+29      PWR_OverloadWfe(); /* WFE redefine locally */
+30      PWR_OverloadWfe(); /* WFE redefine locally */
+31    }
+32    /* Reset SLEEPDEEP bit of Cortex System Control Register */
+33    CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
+34  }
 ```
 
-5
-
-```text
-6
-/* Clear PDDS bit in PWR register to specify entering in STOP mode when CPU enter in Deepsle\
-7
-ep */
-8
-CLEAR_BIT(PWR->CR,
-PWR_CR_PDDS);
-```
-
-9
-
-```text
-10
-/* Select the voltage regulator mode by setting LPDS bit in PWR register according to Regula\
-11
-tor parameter value */
-12
-MODIFY_REG(PWR->CR, PWR_CR_LPDS, Regulator);
-```
-
-13
-
-```text
-14
-/* Set SLEEPDEEP bit of Cortex System Control Register */
-15
-SET_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
-```
-
-16
-
-```text
-17
-/* Select Stop mode entry --------------------------------------------------*/
-18
-if(STOPEntry == PWR_STOPENTRY_WFI)
-19
-{
-20
-/* Request Wait For Interrupt */
-21
-__DSB(); //Added by me
-22
-__WFI();
-23
-__ISB(); //Added by me
-24
-}
-25
-else
-26
-{
-27
-/* Request Wait For Event */
-28
-__SEV();
-29
-PWR_OverloadWfe(); /* WFE redefine locally */
-30
-PWR_OverloadWfe(); /* WFE redefine locally */
-31
-}
-32
-/* Reset SLEEPDEEP bit of Cortex System Control Register */
-33
-CLEAR_BIT(SCB->SCR, ((uint32_t)SCB_SCR_SLEEPDEEP_Msk));
-34
-}
-```
-
-## 该更改仅在于在 WFI 指令之前和之后各添加了一条内存屏障指令，如第 21 行和第 23 行所示。
+该更改仅在于在 WFI 指令之前和之后各添加了一条内存屏障指令，如第 21 行和第 23 行所示。
 
 ¹⁶https://bit.ly/3oN7rO5
 
 <!-- page: 506 -->
 
-![Image from PDF page 506](../images/page-0506-image-01.png)
+<p align="center"><img src="../images/page-0506-image-01.png" alt="Image from PDF page 506"></p>
 
 ## 19.4 STM32L/G 微控制器的电源管理
 
@@ -723,11 +504,11 @@ STM32L 系列是一个专为低功耗应用定制的广泛 MCU 产品组合。�
 
 <!-- page: 507 -->
 
-![Image from PDF page 507](../images/page-0507-image-01.jpeg)
+<p align="center"><img src="../images/page-0507-image-01.jpeg" alt="Image from PDF page 507"></p>
 
-图 19.6：STM32L4 微控制器中的电源
+<p align="center">图 19.6：STM32L4 微控制器中的电源</p>
 
-即使在这些系列中，VDD 域也是最重要的。它用于为其他电压域供电，例如 VDDIO1 域（用于为大多数 MCU 引脚供电）以及用于为 VCORE 域供电的内部电压调节器。这可以通过软件编程为三种不同的功率范围（scale 1、scale 2 和 scale 3），以根据系统的最大工作频率优化功耗（得益于前面提到的电压缩放技术）。值得注意的是，对于提供 GPIOG 外设的 MCU（即采用高引脚数封装的 MCU），VDDIO2 域用于独立地为 GPIOG 外设供电。该域与 USB 域一起，可以通过 HAL 提供的专用函数（`HAL_PWREx_EnableVddIO2()`、`HAL_PWREx_EnableVddUSB()` 等）选择性启用/禁用。
+即使在这些系列中，VDD 域也是最重要的。它用于为其他电压域供电，例如 VDDIO1 域（用于为大多数 MCU 引脚供电）以及用于为 VCORE 域供电的内部电压调节器。内部电压调节器可通过软件配置为三种不同的电压缩放档位（scale 1、scale 2 和 scale 3），以根据系统的最大工作频率优化功耗（得益于前面提到的电压缩放技术）。值得注意的是，对于提供 GPIOG 外设的 MCU（即采用高引脚数封装的 MCU），VDDIO2 域用于独立地为 GPIOG 外设供电。该域与 USB 域一起，可以通过 HAL 提供的专用函数（`HAL_PWREx_EnableVddIO2()`、`HAL_PWREx_EnableVddUSB()` 等）选择性启用/禁用。
 
 为了在 VDD 关闭时保持备份寄存器的内容并为 RTC 功能供电，VBAT 引脚可以连接到由电池或其他电源提供的可选备用电压。VBAT 引脚为 RTC 单元、LSE 振荡器以及一个或两个用于从深度睡眠模式唤醒 MCU 的引脚供电，允许 RTC 在主电源关闭时继续运行。因此，VBAT 电源被称为为 RTC 域供电。切换到 VBAT 供电由 PDR 控制。VLCD 引脚用于控制 LCD 的对比度。
 
@@ -739,9 +520,9 @@ STM32L 系列是一个专为低功耗应用定制的广泛 MCU 产品组合。�
 
 表 19.2 总结了十种电源模式，并展示了由硬件抽象层（HAL）提供的用于将 MCU 置于相应电源模式的功能。我们将在后文中更深入地分析它们。请注意，并非所有 STM32L/G MCU 都支持所有这些电源模式。在设计固件中的电源转换之前，请务必查阅您的数据手册对应的参考手册。
 
-![Image from PDF page 508](../images/page-0508-image-01.png)
+<p align="center"><img src="../images/page-0508-image-01.png" alt="Image from PDF page 508"></p>
 
-图 19.7：STM32L5 微控制器支持的十二种电源模式
+<p align="center">图 19.7：STM32L5 微控制器支持的十二种电源模式</p>
 
 #### 19.4.2.1 运行模式
 
@@ -753,43 +534,42 @@ STM32L 系列是一个专为低功耗应用定制的广泛 MCU 产品组合。�
 
 缩放（DVS）等级 2，这在较新的 STM32L MCU 中会将 VCORE 域降低到 1.0V。这种模式也被称为运行范围 2（run range 2），并且可以通过禁用闪存来进一步降低整体功耗。
 
-![Image from PDF page 509](../images/page-0509-image-01.png)
 
-如前所述，在 STM32L/G MCU 以及某些较新的 STM32F4 MCU（如 STM32F446）中，即使在运行模式下也可以禁用闪存。CubeHAL 函数 HAL_- FLASHEx_EnableRunPowerDown() 会自动为我们执行此操作，而 HAL_FLASHEx_DisableRunPowerDown() 例程则重新启用闪存。唯一的条件是，该函数以及所有在闪存关闭时使用的其他例程（包括中断向量）必须放置在 SRAM 中，否则一旦闪存断电，就会立即发生总线错误（Bus Fault）。通过创建自定义链接器脚本可以轻松实现这一点，我们将在第 20 章中看到。因此，ST 工程师将这些例程收集在一个名为 stm32XXxx_hal_flash_ramfunc.c 的单独文件中。
 
-![Image from PDF page 509](../images/page-0509-image-02.jpeg)
+如前所述，在 STM32L/G MCU 以及某些较新的 STM32F4 MCU（如 STM32F446）中，即使在运行模式下也可以禁用闪存。CubeHAL 函数 `HAL_FLASHEx_EnableRunPowerDown()` 会自动为我们执行此操作，而 `HAL_FLASHEx_DisableRunPowerDown()` 例程则重新启用闪存。唯一的条件是，该函数以及所有在闪存关闭时使用的其他例程（包括中断向量）必须放置在 SRAM 中，否则一旦闪存断电，就会立即发生总线错误（Bus Fault）。通过创建自定义链接器脚本可以轻松实现这一点，我们将在第 20 章中看到。因此，ST 工程师将这些例程收集在一个名为 `stm32XXxx_hal_flash_ramfunc.c` 的单独文件中。
 
-表 19.2：STM32L5 MCU 支持的十二种电源模式中的十种
+<p align="center"><img src="../images/page-0509-image-02.jpeg" alt="Image from PDF page 509"></p>
 
-为了进一步降低系统处于运行模式时的能耗，可以将内部电压调节器配置为低功耗模式。在此模式下，系统频率不应超过 2 MHz。HAL_PWREx_EnableLowPowerRunMode() 函数会自动为我们执行此操作。在此模式下，我们最终可以禁用闪存，以进一步降低整体功耗。
+<p align="center">表 19.2：STM32L5 MCU 支持的十二种电源模式中的十种</p>
+
+为了进一步降低系统处于运行模式时的能耗，可以将内部电压调节器配置为低功耗模式。在此模式下，系统频率不应超过 2 MHz。HAL_PWREx_EnableLowPowerRunMode() 函数会自动为我们执行此操作。在此模式下，还可以进一步禁用闪存，以进一步降低整体功耗。
 
 <!-- page: 510 -->
 
 从能效角度来看，低功耗运行模式代表了 STM32L MCU 的最佳折衷方案，如图 19.8¹⁹ 所示。如您所见，启用 ART 加速器会增加性能，但也会降低动态功耗。最佳功耗通常是在指令缓存（Instruction Cache）开启、数据缓存（Data Cache）开启且预取缓冲区（Prefetch Buffer）关闭时达到的，因为这种配置减少了闪存访问次数。较小的闪存动态功耗使得每次固件需要访问闪存时都能保持较小的功耗。SRAM1 和 SRAM2 的功耗相当相似，但当 SRAM2 未重映射到地址 0 时，由于其 0 等待状态访问特性，SRAM2 比 SRAM1 更具能效。
 
-![Image from PDF page 510](../images/page-0510-image-01.jpeg)
+<p align="center"><img src="../images/page-0510-image-01.jpeg" alt="Image from PDF page 510"></p>
 
-图 19.8：STM32L4 系列中的功耗优化与频率关系
+<p align="center">图 19.8：STM32L4 系列中的功耗优化与频率关系</p>
 
 #### 19.4.2.2 睡眠模式
 
 睡眠模式允许使用所有外设，同时提供最快的唤醒时间。在这些模式下，CPU 停止运行，并且每个外设时钟都可以通过软件配置，在睡眠模式和低功耗睡眠模式期间被门控开启（ON）或关闭（OFF）。这些模式通过执行汇编指令 WFI 或 WFE 进入。为了将 MCU 置于两种睡眠模式之一，CubeHAL 提供了以下函数：
 
-```text
+```c
 void HAL_PWR_EnterSLEEPMode(uint32_t Regulator, uint8_t SLEEPEntry);
 ```
 
-第一个参数 Regulator 可以接受值 PWR_MAINREGULATOR_ON 和 PWR_LOWPOWERREG- ULATOR_ON：前者将 MCU 置于睡眠模式，后者置于低功耗睡眠模式。第二个参数 SLEEPEntry 可以取值 PWR_SLEEPENTRY_WFI 或 PWR_SLEEPENTRY_WFE：顾名思义，前者执行 WFI 指令，后者执行 WFE 指令。
+第一个参数 Regulator 可以接受值 PWR_MAINREGULATOR_ON 和 PWR_LOWPOWERREGULATOR_ON：前者将 MCU 置于睡眠模式，后者置于低功耗睡眠模式。第二个参数 SLEEPEntry 可以取值 PWR_SLEEPENTRY_WFI 或 PWR_SLEEPENTRY_WFE：顾名思义，前者执行 WFI 指令，后者执行 WFE 指令。
 
 ¹⁹图 19.8 取自此 ST 官方文档(https://bit.ly/3FwfEfA)。ST 还提供了一份关于 STM32L4 MCU 功耗优化的有用应用笔记，即 AN4746(https://bit.ly/3FAKKCy)。
 
 <!-- page: 511 -->
 
-仔细阅读
 
-![Image from PDF page 511](../images/page-0511-image-01.png)
-
-请注意，对于 STM32L MCU，在此电源模式下系统频率不应超过 MSI 范围 1 的值。有关电压调节器和外设工作条件的更多详细信息，请参阅产品数据手册。
+> **仔细阅读**
+>
+> 请注意，对于 STM32L MCU，在此电源模式下系统频率不应超过 MSI 范围 1 的值。有关电压调节器和外设工作条件的更多详细信息，请参阅产品数据手册。
 
 如果使用 WFI 指令进入睡眠模式，任何由 NVIC 确认的外设中断都可以将设备从睡眠模式中唤醒。如果使用 WFE 指令进入睡眠模式，一旦发生事件，MCU 就会退出睡眠模式。唤醒事件可以由以下情况生成：
 
@@ -816,7 +596,7 @@ BOR 在 stop1 和 stop2 模式下始终可用。当使用高于 VBOR0 的阈值�
 
 要将微控制器置于停止模式，HAL 提供了以下函数：
 
-```text
+```c
 void HAL_PWREx_EnterSTOPxMode(uint8_t STOPEntry);
 ```
 
@@ -828,31 +608,27 @@ void HAL_PWREx_EnterSTOPxMode(uint8_t STOPEntry);
 
 #### 19.4.2.4 待机模式
 
-STM32L/G 微控制器提供两种待机模式，它们基于 Cortex-M 深度睡眠模式。待机模式是最低功耗模式，在此模式下可保留 32 Kbytes 的 SRAM2，支持从 VDD 到 VBAT 的自动切换，并且 I/O 电平可以通过独立的上拉和下拉电路进行配置。默认情况下，电压调节器处于掉电模式，SRAM 和外设寄存器内容丢失。128 字节的备份寄存器始终保留。超低功耗 BOR 始终开启，以确保无论 VDD 斜率如何都能安全复位。
+STM32L/G 微控制器提供两种待机模式，它们基于 Cortex-M 深度睡眠模式。待机模式是在仍可保留 32 KB 的 SRAM2、支持从 VDD 到 VBAT 的自动切换并允许通过独立的上拉和下拉电路配置 I/O 电平的模式中，功耗最低的模式。默认情况下，电压调节器处于掉电模式，SRAM 和外设寄存器内容丢失。128 字节的备份寄存器始终保留。超低功耗 BOR 始终开启，以确保无论 VDD 斜率如何都能安全复位。
 
 要将微控制器置于待机模式，HAL 提供了以下函数：
 
-```text
+```c
 void HAL_PWR_EnterSTANDBYMode(void);
 ```
 
-如果我们希望保留 32 Kbytes 的 SRAM2，则可以调用以下函数：
+如果希望保留 32 Kbytes 的 SRAM2，则可在调用 `HAL_PWR_EnterSTANDBYMode()` 之前调用以下函数：
 
-```text
+```c
 void HAL_PWREx_EnableSRAM2ContentRetention(void);
 ```
 
 <!-- page: 513 -->
 
-```text
-before we call the HAL_PWR_EnterSTANDBYMode();
-```
-
 在 STM32L 微控制器中，每个 I/O 都可以通过调用 HAL 函数 HAL_PWREx_EnablePullUpPullDownConfig() 配置为带或不带上拉或下拉电阻。这允许在待机模式下控制外部组件的输入状态。有关此主题的更多信息，请参阅您的微控制器参考手册。
 
 当发生外部复位（NRST 引脚）、IWDG 复位、任一已使能的 WKUPx 引脚上的上升沿或 RTC 事件时，微控制器退出待机模式。从待机模式唤醒后，除电源控制/状态寄存器（PWR->CSR）外，所有寄存器均被复位。从待机模式唤醒后，程序执行以与复位后相同的方式重新开始（启动引脚采样、选项字节加载、获取复位向量等）。使用宏：
 
-```text
+```c
 __HAL_PWR_GET_FLAG(PWR_FLAG_SB);
 ```
 
@@ -864,11 +640,11 @@ __HAL_PWR_GET_FLAG(PWR_FLAG_SB);
 
 要进入关机模式，HAL 提供了以下函数：
 
-```text
+```c
 void HAL_PWREx_EnterSHUTDOWNMode(void);
 ```
 
-当发生外部复位（NRST 引脚）、任一已使能的 WKUPx 引脚出现上升沿或 RTC 事件时，微控制器将退出关机模式。从待机模式唤醒后，所有寄存器均被复位，包括电源控制/状态寄存器（PWR->CSR）。从关机模式唤醒后，程序执行将以与复位后相同的方式重新开始（采样启动引脚、加载选项字节、获取复位向量等）。
+当发生外部复位（NRST 引脚）、任一已使能的 WKUPx 引脚出现上升沿或 RTC 事件时，微控制器将退出关机模式。从关机模式唤醒后，所有寄存器均被复位，包括电源控制/状态寄存器（PWR->CSR）。从关机模式唤醒后，程序执行将以与复位后相同的方式重新开始（采样启动引脚、加载选项字节、获取复位向量等）。
 
 ### 19.4.3 电源模式转换
 
@@ -878,9 +654,9 @@ STM32L/G 微控制器提供了多种电源模式。然而，需要注意的是�
 
 图 19.9 展示了 STM32L4 微控制器中有效的电源模式转换。如图所示，从运行模式可以访问除低功耗睡眠模式外的所有低功耗模式。要进入低功耗睡眠模式，必须先切换到低功耗运行模式，然后在调节器处于低功耗状态时执行 WFI 或 WFE 指令。另一方面，当退出低功耗睡眠模式时，STM32L4 处于低功耗运行模式。当器件处于低功耗运行模式时，可以进入除睡眠模式和 stop2 模式外的所有低功耗模式。Stop2 模式只能从运行模式进入。如果器件从低功耗运行模式进入 Stop1 模式，它将退出至低功耗运行模式。如果器件从低功耗运行模式进入待机模式或关机模式，它将退出至运行模式。
 
-![Image from PDF page 514](../images/page-0514-image-01.jpeg)
+<p align="center"><img src="../images/page-0514-image-01.jpeg" alt="Image from PDF page 514"></p>
 
-图 19.9：STM32L4 微控制器中允许的电源模式转换
+<p align="center">图 19.9：STM32L4 微控制器中允许的电源模式转换</p>
 
 ### 19.4.4 低功耗外设
 
@@ -903,8 +679,8 @@ LPTIM 外设的相关特性如下：
 - 16 位向上计数器
 - 3 位预分频器，具有 8 种可能的分频系数（1, 2, 4, 8, 16, 32, 64, 128）
 - 可选时钟源
-
-- – 内部时钟源：LSE、LSI、HSI16 或 APB 时钟 – 通过 ULPTIM 输入的外部时钟源（在无 LP 振荡器运行时工作，用于脉冲计数器应用）
+  - 内部时钟源：LSE、LSI、HSI16 或 APB 时钟
+  - 通过 ULPTIM 输入的外部时钟源（在无 LP 振荡器运行时工作，用于脉冲计数器应用）
 - 16 位周期寄存器
 - 16 位比较寄存器
 - 连续/单次模式
@@ -940,7 +716,7 @@ STM32U 系列提供即使在 Stop 3 模式下也能工作的 DMA，允许在内�
 
 大多数 STM32 微控制器提供两个电源监控器：BOR 和 PVD。欠压复位 (Brownout Reset, BOR) 是一个单元，它在电源电压达到指定的 VBOR 阈值之前保持微控制器处于复位状态。VBOR 通过器件选项字节进行配置。默认情况下，BOR 处于关闭状态。用户可以选择三到五个可编程的 VBOR 阈值级别。有关 BOR 特性的完整详细信息，请参阅器件数据手册中的“电气特性”部分。不提供 BOR 单元的 STM32 器件通常具有一个名为上电复位 (Power on Reset, POR)/掉电复位 (Power Down Reset, PDR) 的类似单元，它们执行与 BOR 单元相同的功能，但具有固定的、出厂配置的电压阈值。
 
-固件可以通过使用可编程电压检测器 (Programmable Voltage Detector, PVD) 主动监控电源。PVD 允许配置要监控的电压，如果该 VDD 高于或低于给定级别，则电源控制/状态寄存器 (PWR->CSR) 中相应的位会被置位。如果配置得当，MCU 可以通过 EXTI 控制器生成专用的中断请求 (IRQ)。对于具有此功能的 MCU，HAL 提供 HAL_PWR_EnablePVD()/HAL_PWR_DisablePVD() 函数来启用/禁用 PVD，并提供 HAL_PWR_ConfigPVD() 函数来配置电压级别。更多信息，请参阅 CubeHAL 的 HAL_PWREx 模块。
+固件可以使用可编程电压检测器（Programmable Voltage Detector，PVD）主动监控电源。PVD 允许配置监控电压阈值；当 VDD 高于或低于该阈值时，电源控制/状态寄存器（PWR->CSR）中的相应位会被置位。如果配置得当，MCU 可以通过 EXTI 控制器生成专用的中断请求（IRQ）。对于具有此功能的 MCU，HAL 提供 `HAL_PWR_EnablePVD()`/`HAL_PWR_DisablePVD()` 函数来启用/禁用 PVD，并提供 `HAL_PWR_ConfigPVD()` 函数来配置电压级别。更多信息，请参阅 CubeHAL 的 HAL_PWREx 模块。
 
 BOR/POR/PDR 和 PVD 都主动监控 VDD，并将其与给定的阈值级别进行比较。最近的 STM32L 微控制器提供四个外设电压监控 (Peripheral Voltage Monitoring, PVM)，用于监控其他外设电源域。四个 PVMx 中的每一个都是固定阈值 VPVMx 与所选电源之间的比较器。表 19.3 总结了 PVMx 的特性，包括监控的电源域和电压级别。每个 PVM 输出都连接到一个 EXTI 线，如果通过 EXTI 寄存器启用，则可以生成中断。在具有 PVM 支持的 STM32 MCU 中，此 IRQ 与 PVD 共享。当独立电源降至 PVMx 阈值以下和/或升至 PVMx 阈值以上时，根据 EXTI 线上升/下降沿配置，会生成 PVMx 输出中断。每个 PVM 可以在 Stop 0、Stop 1 和 Stop 2 模式下保持活动状态，并且 PVM 中断可以从任何停止模式中唤醒。
 
@@ -948,7 +724,12 @@ BOR/POR/PDR 和 PVD 都主动监控 VDD，并将其与给定的阈值级别进�
 
 表 19.3：PVMx 特性
 
-PVM 电源 PVM 阈值 EXTI 线 PVM1 VDDUSB VPVM1 (约 1.2 V) 35 PVM2 VDDIO2 VPVM2 (约 0.9 V) 36 PVM3 VDDA VPVM3 (约 1.65 V) 37 PVM4 VDDA VPVM4 (约 1.8 V) 38
+| PVM | 电源 | PVM 阈值 | EXTI 线 |
+| --- | --- | --- | --- |
+| PVM1 | VDDUSB | VPVM1（约 1.2 V） | 35 |
+| PVM2 | VDDIO2 | VPVM2（约 0.9 V） | 36 |
+| PVM3 | VDDA | VPVM3（约 1.65 V） | 37 |
+| PVM4 | VDDA | VPVM4（约 1.8 V） | 38 |
 
 要配置 PVM，CubeHAL 提供 HAL_PWREx_ConfigPVM() 例程，而要选择性启用/禁用其中一个 PVMx，则提供 HAL_PWREx_EnablePVMx()/HAL_PWREx_DisablePVMx()。更多信息，请参阅 CubeL5 文档。
 
@@ -960,9 +741,10 @@ CubeHAL 提供方便的函数来启用/禁用低功耗模式下的调试模式�
 
 重要的是要注意，如果我们想在低功耗模式下调试 MCU，我们还必须保持对应于 SWDIO/SWO/SWCLK 引脚的 GPIO 外设开启。在所有 Nucleo 板上，这些引脚与 PA13、PA14 和 PB3 重合。
 
-请注意，在启用低功耗模式下的 MCU 调试之前，必须通过调用 __HAL_RCC_DBGMCU_CLK_ENABLE() 宏来启用 DBGMCU 接口。
 
-![Image from PDF page 517](../images/page-0517-image-01.png)
+> **注意**
+>
+> 请注意，在启用低功耗模式下的 MCU 调试之前，必须通过调用 `__HAL_RCC_DBGMCU_CLK_ENABLE()` 宏来启用 DBGMCU 接口。
 
 ## 19.7 使用 CubeMX 功耗计算器
 
@@ -974,15 +756,15 @@ CubeHAL 提供方便的函数来启用/禁用低功耗模式下的调试模式�
 
 CubeMX 提供了一个名为功耗计算器（Power Consumption Calculator, PCC）的便捷工具，它允许我们构建电源序列并对 MCU 功耗进行估算。
 
-![Image from PDF page 518](../images/page-0518-image-01.jpeg)
+<p align="center"><img src="../images/page-0518-image-01.jpeg" alt="Image from PDF page 518"></p>
 
-图 19.10：功耗计算器主视图
+<p align="center">图 19.10：功耗计算器主视图</p>
 
-图 19.10 展示了 PCC 的主视图。要使用它，我们首先必须选择 Vdd 电源源，否则该工具不允许我们在电源序列中创建步骤。下一个可选步骤是选择用于在主电源缺失时为 MCU 供电的电池。这对于评估电池寿命非常有用。我们可以从一系列知名电池中选择，或者添加自定义电池。
+图 19.10 展示了 PCC 的主视图。要使用它，我们首先必须选择 VDD 电源，否则该工具不允许我们在电源序列中创建步骤。下一个可选步骤是选择用于在主电源缺失时为 MCU 供电的电池。这对于评估电池寿命非常有用。我们可以从一系列知名电池中选择，或者添加自定义电池。
 
 通过点击绿色的“New Step”（新步骤），我们可以添加序列中的一个步骤。在这里，我们可以指定电源模式（运行、睡眠等）、存储器配置（Flash 启用/禁用、ART 启用/禁用等）以及电源电压水平。从同一个对话框中，我们还可以选择 CPU 频率、步骤持续时间以及启用的外设。
 
-使用此工具，我们可以确定微控制器需要多少功耗。在 STM32L/G MCU 中，还可以启用“Transitions Checker”（转换检查器），它允许识别无效的转换状态（例如，我们不能从运行模式直接切换到低功耗睡眠模式，而不经过低功耗运行模式）。有关 PCC 视图的更多信息，请参阅 ST 的 UM1718²²。
+使用此工具，我们可以估算微控制器的功耗。在 STM32L/G MCU 中，还可以启用“Transitions Checker”（转换检查器），它允许识别无效的转换状态（例如，我们不能从运行模式直接切换到低功耗睡眠模式，而不经过低功耗运行模式）。有关 PCC 视图的更多信息，请参阅 ST 的 UM1718²²。
 
 ²²https://bit.ly/3k8HeE2
 
@@ -990,27 +772,25 @@ CubeMX 提供了一个名为功耗计算器（Power Consumption Calculator, PCC�
 
 ## 19.8 案例研究：在低功耗模式下使用看门狗定时器
 
-IWDG 和 WWDG 定时器一旦启动就无法停止。WWDG 定时器会一直计数直到停止模式，而 IWDG 定时器由于由 LSI 振荡器提供时钟，即使在关机模式下也能工作。这意味着看门狗定时器会阻止 MCU 长时间停留在低功耗模式下。
+IWDG 和 WWDG 定时器一旦启动就无法停止。WWDG 会持续计数，直到 MCU 进入停止模式后才停止；IWDG 定时器由 LSI 振荡器提供时钟，即使在关机模式下也能工作。这意味着看门狗定时器会阻止 MCU 长时间停留在低功耗模式下。
 
 如果您的应用程序需要同时使用看门狗定时器和低功耗模式，则需要遵循以下技巧，该技巧基于 SRAM 存储器内容在连续复位后得以保留这一事实（显然，它无法在电源开启复位后保留）。因此，为了在保持低功耗模式的同时跟踪由看门狗定时器引起的复位，您可以使用一个变量来跟踪这一事实（例如，在进入低功耗模式之前，将 uint32_t 变量的内容设置为特殊的“密钥”值）。一旦 MCU 复位，您可以检查该变量的内容，如果该变量已相应配置，则可以避免启动看门狗定时器。
 
 然而，我们需要一个“安全”的位置来存储此变量，否则它很可能会被启动例程覆盖。因此，最好的做法是减少 mem.ld 文件中 SRAM 区域的大小，并将此哨兵变量放置在 SRAM 存储器的末尾，通常主堆栈（main stack）就在那里开始：
 
-```text
+```c
 volatile uint32_t *lpGuard = (0x20000000 + SRAM_SIZE);
 ```
 
 例如，假设有一个具有 8KB SRAM 的 STM32F030R8 MCU，并且假设我们在 mem.ld 文件中以如下方式定义 SRAM 区域：
 
-```text
+```ld
 MEMORY {
-FLASH (rx)
-: ORIGIN = 0x08000000, LENGTH = 64K
-SRAM (xrw)
-: ORIGIN = 0x20000000, LENGTH = 8K - 4
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 64K
+    SRAM (xrw) : ORIGIN = 0x20000000, LENGTH = 8K - 4
 }
 ```
 
-那么宏 SRAM_SIZE 将等于 0x2000-4 = 0x1FFC。lpGuard 变量的内容将放置在地址 0x2000 1FFC 处。
+那么宏 SRAM_SIZE 将等于 0x2000-4 = 0x1FFC。lpGuard 变量的内容将放置在地址 0x20001FFC 处。
 
 我知道这些概念可能看起来完全晦涩难懂。一旦您阅读了下一章关于 STM32 应用程序内存布局的内容，许多事情将会得到澄清。

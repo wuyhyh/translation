@@ -108,7 +108,7 @@ RAM debugging.
 
 <!-- page: 593 -->
 
-![Image from PDF page 593](../images/page-0593-image-01.png)
+
 
 在因为此过程在您的情况下可能无法工作而向本作者提交支持请求之前，请考虑到，对于拥有基于 SRAM 内存较少的 STM32 MCU 的 Nucleo 板的用户，此过程可能无法工作。这是因为代码区域可能会落入堆栈区域。此过程基本上仅适用于真正小型且有限的程序。
 
@@ -368,8 +368,6 @@ CMSIS SystemInit() 例程是平台相关的，由 ST 在名为 Core/Src/system_s
 ## 22.3 开发自定义引导加载程序
 
 请仔细阅读
-
-![Image from PDF page 598](../images/page-0598-image-01.png)
 
 本段描述的引导加载程序（bootloader）仅在 ST-LINK 接口的固件版本等于或高于 2.27.15 时才能正常工作。旧版本在 VCP 上存在一个缺陷，导致 USART 接口无法按预期工作。请确保您的 Nucleo 板已更新。
 
@@ -682,7 +680,6 @@ RAM (xrw) : ORIGIN = 0x20000000, LENGTH = 96K
 
 根据上一段所述，请确保 SystemInit() 例程不更改 VTOR 寄存器的值。
 
-![Image from PDF page 603](../images/page-0603-image-01.png)
 
 <!-- page: 604 -->
 

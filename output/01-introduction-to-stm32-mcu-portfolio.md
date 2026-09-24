@@ -68,33 +68,14 @@ c = a * b;
 ### 编译器将生成以下 ARM 汇编代码²：
 
 ```text
-1
-movs
-r3, #3
-;move "3" in register r3
-2
-strb
-r3, [r7, #7] ;store the content of r3 in "a"
-3
-movs
-r3, #2
-;move "2" in register r3
-4
-strb
-r3, [r7, #6] ;store the content of r3 in "b"
-5
-ldrb
-r2, [r7, #7] ;load the content of "a" in r2
-6
-ldrb
-r3, [r7, #6] ;load the content of "b" in r3
-7
-smulbb
-r3, r2, r3
-;multiply "a" with "b" and store result in r3
-8
-strb
-r3, [r7, #5] ;store the result in "c"
+1 movs r3, #3 ;move "3" in register r3
+2 strb r3, [r7, #7] ;store the content of r3 in "a"
+3 movs r3, #2 ;move "2" in register r3
+4 strb r3, [r7, #6] ;store the content of r3 in "b"
+5 ldrb r2, [r7, #7] ;load the content of "a" in r2
+6 ldrb r3, [r7, #6] ;load the content of "b" in r3
+7 smulbb r3, r2, r3 ;multiply "a" with "b" and store result in r3
+8 strb r3, [r7, #5] ;store the result in "c"
 ```
 
 我们可以看到，所有操作始终涉及一个寄存器。第 1-2 行的指令将数字 3 移入寄存器 r3，然后将其内容（即数字 3）存储到由寄存器 r7 加上 7 个内存位置偏移量所给出的内存位置中——这就是变量存储的位置。第 3-4 行对变量 b 执行相同的操作。然后，第 5-7 行加载变量 a 和 b 的内容并执行乘法运算。最后，第 8 行将结果存储在变量 c 的内存位置中。

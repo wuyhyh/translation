@@ -179,299 +179,142 @@ Startup（启动）选项卡配置如何启动调试会话。Initialization Comm
 - Exception on unaligned access（非对齐访问异常）：可以启用，以便在存在非对齐内存访问时获取异常。
 - Halt on exception（异常时暂停）：默认启用，以便在调试期间发生异常错误时程序执行暂停。
 
-## 5.3 I/O 重定向
+## 5.3 I/O 重定向 
 
 在第 4 章中，我们讨论了使用标准 C I/O 原语（如 `printf()`/`scanf()`）在目标微控制器与外部世界之间交换数据的可能性。在调试过程中，通常无法使用断点，因为这会导致丢失相关事件。与此同时，在串行控制台⁶上打印几条消息对于理解固件⁷中出现的错误非常有帮助。最后，得益于 `printf()` 函数的字符串格式化功能，我们在打印简单整数时无需处理数据类型转换。
 
 最简单且有效的解决方案是重新定义所需的系统调用（`_write()`、`_read()`、`_isatty()`、`_close()`、`_fstat()`），将 STDIN、STDOUT 和 STDERR 标准流重定向到 Nucleo USART2。可以通过以下方式轻松实现：
 
-```text
-Filename: CH5-EX1/Core/Src/retarget.c
-15
-UART_HandleTypeDef *gHuart;
-```
+**Filename: CH5-EX1/Core/Src/retarget.c**
 
+```c++
+15 UART_HandleTypeDef *gHuart;
 16
-
-```text
-17
-void RetargetInit(UART_HandleTypeDef *huart) {
-18
-gHuart = huart;
-```
-
+17 void RetargetInit(UART_HandleTypeDef *huart) {
+18 gHuart = huart;
 19
-
-```text
-20
-/* Disable I/O buffering for STDOUT stream, so that
-21
-* chars are sent out as soon as they are printed. */
-22
-setvbuf(stdout, NULL, _IONBF, 0);
-23
-}
-```
-
+20 /* Disable I/O buffering for STDOUT stream, so that
+21 * chars are sent out as soon as they are printed. */
+22 setvbuf(stdout, NULL, _IONBF, 0);
+23 }
 24
-
-```text
-25
-int _isatty(int fd) {
-26
-if (fd >= STDIN_FILENO && fd <= STDERR_FILENO)
-27
-return 1;
-```
-
+25 int _isatty(int fd) {
+26 if (fd >= STDIN_FILENO && fd <= STDERR_FILENO)
+27 return 1;
 28
-
-```text
-29
-errno = EBADF;
-30
-return 0;
-31
-}
-```
-
+29 errno = EBADF;
+30 return 0;
+31 }
 32
-
-```text
-33
-int _write(int fd, char* ptr, int len) {
+33 int _write(int fd, char* ptr, int len) {
+34 HAL_StatusTypeDef hstatus;
+35
+36 if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
+37 hstatus = HAL_UART_Transmit(gHuart, (uint8_t *) ptr, len, HAL_MAX_DELAY);
+38 if (hstatus == HAL_OK)
+39 return len;
+40 else
+41 return EIO;
+42 }
+43 errno = EBADF;
+44 return -1;
+45 }
+46
+47 int _close(int fd) {
+48 if (fd >= STDIN_FILENO && fd <= STDERR_FILENO)
+49 return 0;
+50
+51 errno = EBADF;
+52 return -1;
+53 }
+54
+55 int _read(int fd, char* ptr, int len) {
+56 HAL_StatusTypeDef hstatus;
+57
+58 if (fd == STDIN_FILENO) {
+59 hstatus = HAL_UART_Receive(gHuart, (uint8_t *) ptr, 1, HAL_MAX_DELAY);
+60 if (hstatus == HAL_OK)
+61 return 1;
+62 else
+63 return EIO;
+64 }
+65 errno = EBADF;
+66 return -1;
+67 }
+68
+69 int _fstat(int fd, struct stat* st) {
+70 if (fd >= STDIN_FILENO && fd <= STDERR_FILENO) {
+71 st->st_mode = S_IFCHR;
+72 return 0;
+73 }
+74
+75 errno = EBADF;
+76 return 0;
+77 }
 ```
 
 ⁶要与串行控制台交互，您需要一个终端模拟器。有关更多信息，请遵循第 8 章中的说明。⁷为了完整性起见，CH5-EX1 中实现的解决方案速度并不快。原因有二。首先，它使用了 CubeHAL，而 CubeHAL 在实现时并未将代码速度作为基本要求。其次，它使用轮询模式驱动 UART：UART 本身并非高速外设，以轮询模式驱动它会使调用 `HAL_UART_Trasmit()` 的代码变得非常缓慢。即使打印几个字符的字符串也会显著拖慢代码速度。因此，请将 `retarget.c` 仅视为一个基础示例。应使用中断模式或 - 更好的是 - DMA 模式来编码。我们将在后文中学习这些高级主题。
 
 <!-- page: 156 -->
 
-```text
-34
-HAL_StatusTypeDef hstatus;
-```
-
-35
-
-```text
-36
-if (fd == STDOUT_FILENO || fd == STDERR_FILENO) {
-37
-hstatus = HAL_UART_Transmit(gHuart, (uint8_t *) ptr, len, HAL_MAX_DELAY);
-38
-if (hstatus == HAL_OK)
-39
-return len;
-40
-else
-41
-return EIO;
-42
-}
-43
-errno = EBADF;
-44
-return -1;
-45
-}
-```
-
-46
-
-```text
-47
-int _close(int fd) {
-48
-if (fd >= STDIN_FILENO && fd <= STDERR_FILENO)
-49
-return 0;
-```
-
-50
-
-```text
-51
-errno = EBADF;
-52
-return -1;
-53
-}
-```
-
-54
-
-```text
-55
-int _read(int fd, char* ptr, int len) {
-56
-HAL_StatusTypeDef hstatus;
-```
-
-57
-
-```text
-58
-if (fd == STDIN_FILENO) {
-59
-hstatus = HAL_UART_Receive(gHuart, (uint8_t *) ptr, 1, HAL_MAX_DELAY);
-60
-if (hstatus == HAL_OK)
-61
-return 1;
-62
-else
-63
-return EIO;
-64
-}
-65
-errno = EBADF;
-66
-return -1;
-67
-}
-```
-
-68
-
-```text
-69
-int _fstat(int fd, struct stat* st) {
-70
-if (fd >= STDIN_FILENO && fd <= STDERR_FILENO) {
-71
-st->st_mode = S_IFCHR;
-72
-return 0;
-73
-}
-```
-
-74
-
-```text
-75
-errno = EBADF;
-76
-return 0;
-77
-}
-```
-
-## 除了 USART 外设的使用部分（我们将在第 8 章中学习），代码相当自解释。最相关的函数是 `_write()` 和 `_read()`，它们利用
+除了 USART 外设的使用部分（我们将在第 8 章中学习），代码相当自解释。最相关的函数是 `_write()` 和 `_read()`，它们利用
 
 <!-- page: 157 -->
 
-## `HAL_UART_*` 例程通过 UART 交换数据。
+`HAL_UART_*` 例程通过 UART 交换数据。
 
-## 要在固件中重定向标准流，只需调用 `RetargetInit()` 初始化库，并传入 UART2 的 `UART_HandleTypeDef` 实例指针（第 46 行）。例如，以下代码展示了如何在固件中使用 `printf()`/`scanf()` 函数：
+要在固件中重定向标准流，只需调用 `RetargetInit()` 初始化库，并传入 UART2 的 `UART_HandleTypeDef` 实例指针（第 46 行）。例如，以下代码展示了如何在固件中使用 `printf()`/`scanf()` 函数：
 
-```text
-Filename: CH5-EX1/Core/Src/main.c
-1
-#include "main.h"
-2
-#include <retarget.h>
-3
-#include <stdio.h>
-```
+**Filename: CH5-EX1/Core/Src/main.c**
 
+```c++
+1 #include "main.h"
+2 #include <retarget.h>
+3 #include <stdio.h>
 4
-
-```text
-5
-/* Private variables ---------------------------------------------------------*/
-6
-UART_HandleTypeDef huart2;
-```
-
+5 /* Private variables ---------------------------------------------------------*/
+6 UART_HandleTypeDef huart2;
 7
-
-```text
-8
-/* Private function prototypes -----------------------------------------------*/
-9
-void SystemClock_Config(void);
-10
-static void MX_GPIO_Init(void);
-11
-static void MX_USART2_UART_Init(void);
-```
-
+8 /* Private function prototypes -----------------------------------------------*/
+9 void SystemClock_Config(void);
+10 static void MX_GPIO_Init(void);
+11 static void MX_USART2_UART_Init(void);
 12
-
-```text
-13
-int main(void) {
-14
-uint8_t uTimes = 0;
-```
-
+13 int main(void) {
+14 uint8_t uTimes = 0;
 15
-
-```text
-16
-/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-17
-HAL_Init();
-18
-/* Configure the system clock */
-19
-SystemClock_Config();
-```
-
+16 /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+17 HAL_Init();
+18 /* Configure the system clock */
+19 SystemClock_Config();
 20
-
-```text
-21
-/* Initialize all configured peripherals */
-22
-MX_GPIO_Init();
-23
-MX_USART2_UART_Init();
-24
-/* Enables retarget of standard I/O over the USART2 */
-25
-RetargetInit(&huart2);
-```
-
+21 /* Initialize all configured peripherals */
+22 MX_GPIO_Init();
+23 MX_USART2_UART_Init();
+24 /* Enables retarget of standard I/O over the USART2 */
+25 RetargetInit(&huart2);
 26
-
-```text
-27
-printf("How many times to print the message?: ");
-28
-scanf("%hhu", &uTimes);
-29
-printf("\r\n");
-```
-
+27 printf("How many times to print the message?: ");
+28 scanf("%hhu", &uTimes);
+29 printf("\r\n");
 30
-
-```text
-31
-for(uint8_t i = 0; i < uTimes;) {
-32
-HAL_Delay(500);
-33
-printf("Hello, Nucleo: %u \r\n", ++i);
-34
-}
-35
-while(1);
-36
-}
+31 for(uint8_t i = 0; i < uTimes;) {
+32 HAL_Delay(500);
+33 printf("Hello, Nucleo: %u \r\n", ++i);
+34 }
+35 while(1);
+36 }
 ```
 
-## 请注意，本示例假设项目是按照第 3 章中所示的相同步骤生成的。如果现在并非所有内容都清晰明了，请不要担心：在阅读完第 8 章后，您将能够理解所执行的每一项操作。
+请注意，本示例假设项目是按照第 3 章中所示的相同步骤生成的。如果现在并非所有内容都清晰明了，请不要担心：在阅读完第 8 章后，您将能够理解所执行的每一项操作。
 
 <!-- page: 158 -->
 
 ![Image from PDF page 158](../images/page-0158-image-01.png)
 
-```text
-printf() and float datatypes.
-```
+
+### printf() and float datatypes.
+
 
 如果您打算使用 printf()/scanf() 函数在串行控制台上打印/读取浮点数据类型（或者如果您打算使用 sprintf() 及类似例程），您需要显式启用 newlib-nano 中的浮点支持，newlib-nano 是嵌入式系统中更紧凑的 C 运行时库版本。为此，请前往 Project->Properties… 菜单，然后进入 C/C++ Build->Settings->MCU Settings，并根据您的功能需求勾选 Use float with printf from newlib-nano 和 Use float with scanf from newlib-nano，如图 5.8 所示。这将增加固件二进制文件的大小。
 
